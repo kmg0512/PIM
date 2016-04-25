@@ -31,4 +31,9 @@
         android:layout_height="wrap_content"
         android:text="android.studio@android.com" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="여기에 계정관련 넣으면 될듯"/>
+
 </LinearLayout>
