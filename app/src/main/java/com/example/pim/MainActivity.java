@@ -3,6 +3,9 @@ package com.example.pim;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,6 +15,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -40,6 +46,27 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        // CardView
+        final int SCHEDULE = 0;
+        final int SOCIAL = 1;
+        LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
+        LinearLayoutManager socialLayoutManager = new LinearLayoutManager(getApplicationContext());
+        RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
+        scheduleRecyclerView.setLayoutManager(scheduleLayoutManager);
+        RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
+        socialRecyclerView.setLayoutManager(socialLayoutManager);
+
+        List<Schedule_item> schedule_items = new ArrayList<>();
+        schedule_items.add(new Schedule_item("schedule1"));
+        schedule_items.add(new Schedule_item("schedule2"));
+
+        List<Social_item> social_items = new ArrayList<>();
+        social_items.add(new Social_item("social1"));
+        social_items.add(new Social_item("social2"));
+
+        scheduleRecyclerView.setAdapter(new RecyclerAdapter(SCHEDULE, schedule_items));
+        socialRecyclerView.setAdapter(new RecyclerAdapter(SOCIAL, social_items));
     }
 
     @Override

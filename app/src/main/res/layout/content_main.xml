@@ -12,26 +12,18 @@
     tools:context="com.example.pim.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <LinearLayout
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_Schedule"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:layout_weight="1">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="일정 관련"/>
-    </LinearLayout>
-    <LinearLayout
+    </android.support.v7.widget.RecyclerView>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView_Social"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:layout_weight="1">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="탐라 관련"/>
-    </LinearLayout>
+    </android.support.v7.widget.RecyclerView>
 </LinearLayout>
