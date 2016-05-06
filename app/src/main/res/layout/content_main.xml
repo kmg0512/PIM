@@ -22,6 +22,21 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="일정 관련"/>
+        <EditText
+            android:id="@+id/From"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="From"/>
+        <EditText
+            android:id="@+id/To"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="To"/>
+        <TextView
+            android:id="@+id/Testing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is for debug"/>
     </LinearLayout>
     <LinearLayout
         android:layout_width="wrap_content"
