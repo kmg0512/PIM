@@ -1,6 +1,8 @@
 # PIM
 Personal Intelligent Manager
 
+---
+
 ## 목적
 일정 / SNS 등 개인 생활에 필요한 정보들을 통합 관리할 수 있는 어플리케이션을 개발한다.
 
@@ -55,3 +57,10 @@ SNS의 로그인에 필요한 암호를 암호화하여 자동 로그인 기능�
 ## 예상되는 어려움
 * Twitter, Facebook의 API를 이용할 때 문제가 생길 수 있다.
 * 좋은 디자인을 구성하는데 어려움이 발생할 수 있다.
+
+---
+
+## 계정
+* Google: pimpersonalmanager@gmail.com / catdog09321
+* Facebook: pimpersonalmanager@gmail.com / catdog09321
+* Twitter: @pim_manager / catdog09321
