@@ -1,14 +1,9 @@
 package com.example.pim;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.JsonReader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,19 +12,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
-import android.widget.TextView;
 
-import com.example.utility.net.HttpsGetter;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.data.ScheduleItemData;
+import com.example.data.SocialItemData;
+import com.example.managers.DataManager;
+import com.example.view.main.ScheduleItemAdapter;
+import com.example.view.main.SocialItemAdapter;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -41,7 +29,47 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+
+        // create layout manager
+        LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
+        LinearLayoutManager socialLayoutManager = new LinearLayoutManager(getApplicationContext());
+
+        // create schedule view
+        RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
+        scheduleRecyclerView.setLayoutManager(scheduleLayoutManager);
+        scheduleRecyclerView.setAdapter(new ScheduleItemAdapter(0));
+
+
+
+        // create social view
+        RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
+        socialRecyclerView.setLayoutManager(socialLayoutManager);
+        socialRecyclerView.setAdapter(new SocialItemAdapter(1));
+
+        if(socialRecyclerView.getAdapter() == scheduleRecyclerView.getAdapter())
+            DataManager.Inst().getScheduleDataList().get(0).setName("Bug!!");
+
+
+        // add schedule data
+        ScheduleItemData tmpdata = new ScheduleItemData();
+        tmpdata.setName("BlaBla");
+        DataManager.Inst().getScheduleDataList().add(tmpdata);
+        DataManager.Inst().getScheduleDataList().add(new ScheduleItemData());
+
+        // add social data
+        DataManager.Inst().getSocialDataList().add(new SocialItemData());
+        DataManager.Inst().getSocialDataList().add(new SocialItemData());
+
+        /*
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
@@ -91,38 +119,11 @@ public class MainActivity extends AppCompatActivity
                         "&mode=transit&key=AIzaSyAwT2mGH1pGz1RMuPfB_tKE9fF3wnpIJz0";
                 HttpsGetter getter = new HttpsGetter();
                 getter.Get(url, listener);
+
+
             }
         });
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        // CardView
-        final int SCHEDULE = 0;
-        final int SOCIAL = 1;
-        LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
-        LinearLayoutManager socialLayoutManager = new LinearLayoutManager(getApplicationContext());
-        RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
-        scheduleRecyclerView.setLayoutManager(scheduleLayoutManager);
-        RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
-        socialRecyclerView.setLayoutManager(socialLayoutManager);
-
-        List<Schedule_item> schedule_items = new ArrayList<>();
-        schedule_items.add(new Schedule_item("schedule1"));
-        schedule_items.add(new Schedule_item("schedule2"));
-
-        List<Social_item> social_items = new ArrayList<>();
-        social_items.add(new Social_item("social1"));
-        social_items.add(new Social_item("social2"));
-
-        scheduleRecyclerView.setAdapter(new RecyclerAdapter(SCHEDULE, schedule_items));
-        socialRecyclerView.setAdapter(new RecyclerAdapter(SOCIAL, social_items));
+        */
     }
 
     @Override
