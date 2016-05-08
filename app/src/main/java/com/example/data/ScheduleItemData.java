@@ -9,9 +9,12 @@ public class ScheduleItemData {
     public GoogleMapLocation loc_origin;
     public GoogleMapLocation loc_destination;
 
+    public String deltaTime;
 
     public ScheduleItemData() {
         name = "None";
+        loc_origin = new GoogleMapLocation();
+        loc_destination = new GoogleMapLocation();
     }
 
     public void setName(String name) {

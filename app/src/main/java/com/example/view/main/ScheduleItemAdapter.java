@@ -1,13 +1,16 @@
 package com.example.view.main;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
 import com.example.pim.R;
+import com.example.utility.net.HttpsGetter;
 
 public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapter.ScheduleItemHolder> {
 
@@ -20,7 +23,8 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         if(this.viewType != viewType)
             return null;
 
-        return new ScheduleItemHolder(parent);
+        ScheduleItemHolder result = new ScheduleItemHolder(parent);
+        return result;
     }
 
     @Override
@@ -36,7 +40,10 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             holder.setDest(data.loc_destination.getMajorName());
         else
             holder.setDest("Destination not allocated");
-        holder.setTime("Dummy Time");
+        if(data.deltaTime != null)
+            holder.setTime(data.deltaTime);
+        else
+            holder.setTime("Dummy Time");
     }
 
     @Override
@@ -59,6 +66,19 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             name = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Name);
             dest = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Destination);
             time = (TextView)this.itemView.findViewById(R.id.Schedule_Item_DeltaTime);
+
+            View.OnClickListener click = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int indx = getAdapterPosition();
+                    Log.d("ScheduleItemHolder", "item number : " + indx + " has clicked");
+                    ScheduleItemData data = DataManager.Inst().getScheduleDataList().get(indx);
+                    DataManager.Inst().RequestDeltaTimeUpdate(data);
+                }
+            };
+            this.itemView.setOnClickListener(click);
+
+
         }
 
         public void setName(String name) {
@@ -72,6 +92,5 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         public void setTime(String time) {
             this.time.setText(time);
         }
-
     }
 }

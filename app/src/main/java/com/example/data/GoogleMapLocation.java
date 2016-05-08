@@ -9,7 +9,7 @@ public class GoogleMapLocation {
 
 
     public GoogleMapLocation() {
-        majorname = "Not Assigned";
+        majorname = "";
         minorname = "";
     }
 
