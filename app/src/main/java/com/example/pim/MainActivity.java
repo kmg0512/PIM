@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -108,6 +109,8 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        Log.d("MainActivity", "enabled add schedule dialog");
+
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -138,6 +141,15 @@ public class MainActivity extends AppCompatActivity
                             EditText editText2 = (EditText) linearLayout.findViewById(R.id.editText2);
                             EditText editText3 = (EditText) linearLayout.findViewById(R.id.editText3);
                             EditText editText4 = (EditText) linearLayout.findViewById(R.id.editText4);
+
+                            ScheduleItemData data = new ScheduleItemData();
+                            data.name = editText1.getText().toString();
+                            data.time = editText2.getText().toString();
+                            data.loc_destination.setMajorName(editText3.getText().toString());
+                            data.comment = editText4.getText().toString();
+
+                            DataManager.Inst().getScheduleDataManager().addItemData(data);
+
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
                             break;

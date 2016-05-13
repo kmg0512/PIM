@@ -70,15 +70,29 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         ScheduleItemData data = scheduleItemManager.getItemData(position);
 
         // link
-        holder.setName(data.getName());
+
+        // name
+        if(data.name != null)
+            holder.setName(data.name);
+        else
+            holder.setName("No Name");
+
+        // dest
         if(data.loc_destination != null)
             holder.setDest(data.loc_destination.getMajorName());
         else
             holder.setDest("Destination not allocated");
+
+        // delta time
         if(data.deltaTime != null)
             holder.setTime(data.deltaTime);
         else
             holder.setTime("Dummy Time");
+
+        if(data.comment != null)
+            holder.setComment(data.comment);
+        else
+            holder.setComment("");
     }
 
     @Override
@@ -90,6 +104,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         private TextView name;
         private TextView dest;
         private TextView time;
+        private TextView comment;
 
         /**
          * Create Holder for Schedule Item
@@ -101,6 +116,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             name = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Name);
             dest = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Destination);
             time = (TextView)this.itemView.findViewById(R.id.Schedule_Item_DeltaTime);
+            comment = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Comment);
 
             View.OnClickListener click = new View.OnClickListener() {
                 @Override
@@ -123,5 +139,6 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         public void setTime(String time) {
             this.time.setText(time);
         }
+        public void setComment(String comment) { this.comment.setText(comment);}
     }
 }
