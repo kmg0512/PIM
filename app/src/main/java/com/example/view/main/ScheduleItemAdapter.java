@@ -9,13 +9,18 @@ import android.widget.TextView;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
+import com.example.managers.ScheduleItemManager;
 import com.example.pim.R;
+import com.example.utility.net.GoogleMapAPI;
 import com.example.utility.net.HttpsGetter;
 
 public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapter.ScheduleItemHolder> {
+    private ScheduleItemManager scheduleItemManager;
+
 
     public ScheduleItemAdapter(int viewType) {
         super(viewType);
+        scheduleItemManager = DataManager.Inst().getScheduleDataManager();
     }
 
     @Override
@@ -30,7 +35,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
     @Override
     public void onBindViewHolder(ScheduleItemHolder holder, int position) {
         // find
-        ScheduleItemData data = DataManager.Inst().getScheduleDataList().get(position);
+        ScheduleItemData data = scheduleItemManager.getItemData(position);
 
         // link
         // TODO: implement how objects will be view
@@ -48,7 +53,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
 
     @Override
     public int getItemCount() {
-        return DataManager.Inst().getScheduleDataList().size();
+        return scheduleItemManager.getItemsize();
     }
 
     class ScheduleItemHolder extends RecyclerView.ViewHolder {
@@ -72,8 +77,8 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
                 public void onClick(View v) {
                     int indx = getAdapterPosition();
                     Log.d("ScheduleItemHolder", "item number : " + indx + " has clicked");
-                    ScheduleItemData data = DataManager.Inst().getScheduleDataList().get(indx);
-                    DataManager.Inst().RequestDeltaTimeUpdate(data);
+                    ScheduleItemData data = scheduleItemManager.getItemData(indx);
+
                 }
             };
             this.itemView.setOnClickListener(click);

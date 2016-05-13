@@ -17,6 +17,7 @@ public class ScheduleItemData {
         loc_destination = new GoogleMapLocation();
     }
 
+
     public void setName(String name) {
         this.name = name;
     }

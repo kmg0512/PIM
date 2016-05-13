@@ -40,6 +40,9 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
+        // initialize data
+        DataManager.Inst().onCreate();
+
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
         LinearLayoutManager socialLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -54,26 +57,13 @@ public class MainActivity extends AppCompatActivity
         RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
         socialRecyclerView.setLayoutManager(socialLayoutManager);
         socialRecyclerView.setAdapter(new SocialItemAdapter(1));
+    }
 
-        // add schedule data
-        ScheduleItemData tmpdata = new ScheduleItemData();
-        tmpdata.setName("BlaBla");
-        tmpdata.loc_destination.setMajorName("서울역");
-        DataManager.Inst().getScheduleDataList().add(tmpdata);
-        DataManager.Inst().getScheduleDataList().add(new ScheduleItemData());
+    @Override
+    public void onDestroy() {
+        DataManager.Inst().onDestroy();
 
-        // add social data
-        DataManager.Inst().getSocialDataList().add(new SocialItemData());
-        DataManager.Inst().getSocialDataList().add(new SocialItemData());
-
-
-        View fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View view) {
-                scheduleItemAdapter.notifyItemChanged(0);
-            }
-        });
+        super.onDestroy();
     }
 
     @Override
@@ -132,4 +122,7 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+
 }
