@@ -1,6 +1,8 @@
 package com.example.pim;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
@@ -13,6 +15,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 
 import com.example.data.ScheduleItemData;
 import com.example.data.SocialItemData;
@@ -118,7 +122,36 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
+            dialog.setTitle("일정 추가");
+
+            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
+            dialog.setView(linearLayout);
+
+            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+                            EditText editText1 = (EditText) linearLayout.findViewById(R.id.editText1);
+                            EditText editText2 = (EditText) linearLayout.findViewById(R.id.editText2);
+                            EditText editText3 = (EditText) linearLayout.findViewById(R.id.editText3);
+                            EditText editText4 = (EditText) linearLayout.findViewById(R.id.editText4);
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                        case DialogInterface.BUTTON_NEUTRAL:
+                            break;
+                    }
+                }
+            };
+
+            dialog.setPositiveButton("Yes", listener);
+            dialog.setNegativeButton("No", listener);
+            dialog.setNeutralButton("Cancel", listener);
+
+            dialog.show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
