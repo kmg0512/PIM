@@ -12,15 +12,47 @@ import com.example.managers.DataManager;
 import com.example.managers.ScheduleItemManager;
 import com.example.pim.R;
 import com.example.utility.net.GoogleMapAPI;
-import com.example.utility.net.HttpsGetter;
 
+/**
+ * This class implements how to visualize ScheduleItem.
+ */
 public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapter.ScheduleItemHolder> {
     private ScheduleItemManager scheduleItemManager;
+    private ScheduleItemManager.ScheduleItemUpdateCallBack onItemUpdate;
 
 
     public ScheduleItemAdapter(int viewType) {
         super(viewType);
+
+        // set reference
         scheduleItemManager = DataManager.Inst().getScheduleDataManager();
+
+        // set listener
+        onItemUpdate = new ScheduleItemManager.ScheduleItemUpdateCallBack() {
+            @Override
+            public void onUpdate(ScheduleItemData data, ScheduleItemManager.ScheduleItemUpdateType type) {
+                int pos = scheduleItemManager.getIndexof(data);
+                Log.d("ScheduleItemAdapter", "Item at " + pos + " is updated");
+
+                switch (type)
+                {
+                    case CHANGE:
+                        notifyItemChanged(pos);
+                        break;
+                    case ADD:
+                        notifyItemInserted(pos);
+                        break;
+                    case REMOVED:
+                        notifyItemRemoved(pos);
+                        break;
+                }
+            }
+        };
+        DataManager.Inst().getScheduleDataManager().addUpdateListener(onItemUpdate);
+    }
+
+    public void onDestroy() {
+        DataManager.Inst().getScheduleDataManager().removeUpdateListener(onItemUpdate);
     }
 
     @Override
@@ -38,8 +70,6 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         ScheduleItemData data = scheduleItemManager.getItemData(position);
 
         // link
-        // TODO: implement how objects will be view
-        // ex )
         holder.setName(data.getName());
         if(data.loc_destination != null)
             holder.setDest(data.loc_destination.getMajorName());
@@ -78,22 +108,18 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
                     int indx = getAdapterPosition();
                     Log.d("ScheduleItemHolder", "item number : " + indx + " has clicked");
                     ScheduleItemData data = scheduleItemManager.getItemData(indx);
-
+                    GoogleMapAPI.UpdateScheduleItem(data);
                 }
             };
             this.itemView.setOnClickListener(click);
-
-
         }
 
         public void setName(String name) {
             this.name.setText(name);
         }
-
         public void setDest(String dest) {
             this.dest.setText(dest);
         }
-
         public void setTime(String time) {
             this.time.setText(time);
         }

@@ -23,6 +23,8 @@ import com.example.view.main.SocialItemAdapter;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    ScheduleItemAdapter scheduleItemAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +52,7 @@ public class MainActivity extends AppCompatActivity
         // create schedule view
         RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
         scheduleRecyclerView.setLayoutManager(scheduleLayoutManager);
-        final ScheduleItemAdapter scheduleItemAdapter = new ScheduleItemAdapter(0);
+        scheduleItemAdapter = new ScheduleItemAdapter(0);
         scheduleRecyclerView.setAdapter(scheduleItemAdapter);
 
         // create social view
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
+        scheduleItemAdapter.onDestroy();
         DataManager.Inst().onDestroy();
 
         super.onDestroy();
