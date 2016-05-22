@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity
 
 
         // initialize data
+        DataManager.Init(this);
         DataManager.Inst().onCreate();
 
         // create layout manager
@@ -64,12 +65,20 @@ public class MainActivity extends AppCompatActivity
         RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
         socialRecyclerView.setLayoutManager(socialLayoutManager);
         socialRecyclerView.setAdapter(new SocialItemAdapter(1));
+
+        // log
+        Log.d("MainActivity", "onCreate");
     }
 
     @Override
     public void onDestroy() {
-        scheduleItemAdapter.onDestroy();
+        // log
+        Log.d("MainActivity", "onDestroy");
+
+        // save data
         DataManager.Inst().onDestroy();
+
+        scheduleItemAdapter.onDestroy();
 
         super.onDestroy();
     }

@@ -1,8 +1,14 @@
 package com.example.managers;
 
 import com.example.data.ScheduleItemData;
+import com.example.utility.jsonizer.JSONAble;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -10,7 +16,7 @@ import java.util.List;
  *
  * add listener to this to notify data changes.
  */
-public class ScheduleItemManager {
+public class ScheduleItemManager implements JSONAble {
     private ArrayList<ScheduleItemData> scheduleItemDatas;
     private ArrayList<ScheduleItemUpdateCallBack> callBacks;
 
@@ -75,6 +81,52 @@ public class ScheduleItemManager {
     }
     public void removeUpdateListener(ScheduleItemUpdateCallBack callBack) {
         callBacks.remove(callBack);
+    }
+
+
+
+    // JSON
+    @Override
+    public JSONObject ToJSON() {
+        JSONObject result = new JSONObject();
+        Collection<JSONObject> arrays = new ArrayList<>();
+
+        for (ScheduleItemData data : scheduleItemDatas) {
+            arrays.add(data.ToJSON());
+        }
+
+        JSONArray arr = new JSONArray(arrays);
+        try {
+            result.put("scheduleItemDatas", arr);
+        } catch (JSONException e) {
+            return new JSONObject();
+        }
+
+        return result;
+    }
+
+    @Override
+    public boolean FromJSON(JSONObject json) {
+        try {
+            JSONArray arr = json.getJSONArray("scheduleItemDatas");
+
+            ArrayList<ScheduleItemData> datas = new ArrayList<>();
+            int len = arr.length();
+            for (int i = 0; i < len; ++i) {
+                ScheduleItemData data = new ScheduleItemData();
+
+                if(!data.FromJSON(arr.getJSONObject(i)))
+                    return false;
+
+                datas.add(data);
+            }
+
+            scheduleItemDatas = datas;
+        } catch (JSONException e) {
+            return false;
+        }
+
+        return true;
     }
 
 }
