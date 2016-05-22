@@ -61,6 +61,6 @@ SNS의 로그인에 필요한 암호를 암호화하여 자동 로그인 기능�
 ---
 
 ## 계정
-* Google: pimpersonalmanager@gmail.com / catdog09321
-* Facebook: pimpersonalmanager@gmail.com / catdog09321
+* Google: personalmanagerpim@gmail.com / catdog09321
+* Facebook: personalmanagerpim@gmail.com / catdog09321
 * Twitter: @pim_manager / catdog09321
