@@ -1,13 +1,10 @@
 package com.example.data;
 
-import android.util.JsonWriter;
-
 import com.example.utility.jsonizer.JSONAble;
+import com.example.utility.net.GoogleMapLocation;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.Serializable;
 
 /**
  * Created by Hoon on 5/6/2016.

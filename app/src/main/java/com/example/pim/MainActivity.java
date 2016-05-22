@@ -20,7 +20,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.example.data.ScheduleItemData;
-import com.example.data.SocialItemData;
 import com.example.managers.DataManager;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
@@ -154,7 +153,7 @@ public class MainActivity extends AppCompatActivity
                             ScheduleItemData data = new ScheduleItemData();
                             data.name = editText1.getText().toString();
                             data.time = editText2.getText().toString();
-                            data.loc_destination.setMajorName(editText3.getText().toString());
+                            data.loc_destination.setName(editText3.getText().toString());
                             data.comment = editText4.getText().toString();
 
                             DataManager.Inst().getScheduleDataManager().addItemData(data);

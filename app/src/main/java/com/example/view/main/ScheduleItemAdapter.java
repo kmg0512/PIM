@@ -79,7 +79,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
 
         // dest
         if(data.loc_destination != null)
-            holder.setDest(data.loc_destination.getMajorName());
+            holder.setDest(data.loc_destination.getName());
         else
             holder.setDest("Destination not allocated");
 

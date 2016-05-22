@@ -15,7 +15,7 @@ import java.net.URLEncoder;
 public class GoogleMapAPI {
     public static void UpdateScheduleItem(final ScheduleItemData data){
         // get destination name
-        String dest = data.loc_destination.getMajorName();
+        String dest = data.loc_destination.getName();
         if(dest == null || dest == "")
             return;
         try {
@@ -56,4 +56,9 @@ public class GoogleMapAPI {
         // request
         getter.Get(url, getListener);
     }
+
+    public void UpdateGoogleMapLocation(GoogleMapLocation loc) {
+
+    }
+
 }
