@@ -1,9 +1,14 @@
 package com.example.utility.map;
 
-/**
- * Created by Hoon on 5/6/2016.
- */
-public class GoogleMapLocation {
+import android.support.annotation.NonNull;
+
+import com.example.utility.jsonizer.JSONAble;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+public class GoogleMapLocation implements JSONAble{
+    @NonNull
     String name = "";
 
     boolean isCoordinateSet = false;
@@ -11,18 +16,19 @@ public class GoogleMapLocation {
     double latitude = 0;
     double longitude = 0;
 
+    @NonNull
     String placeid = "";
 
     public GoogleMapLocation() {
 
     }
 
-    public GoogleMapLocation(String name) {
-
+    public GoogleMapLocation(@NonNull String name) {
+        this.name = name;
     }
 
-    public GoogleMapLocation(String name, double latitude, double longitude, String placeid) {
-
+    public GoogleMapLocation(@NonNull String name, double latitude, double longitude, @NonNull String placeid) {
+        this.name = name;
         this.isCoordinateSet = true;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -30,9 +36,10 @@ public class GoogleMapLocation {
     }
 
     // name of google map location
-    public void setName(String major) {
-        this.name = major;
+    public void setName(@NonNull String name) {
+        this.name = name;
     }
+    @NonNull
     public String getName() {
         return this.name;
     }
@@ -58,5 +65,38 @@ public class GoogleMapLocation {
         return placeid;
     }
 
+    @Override
+    public JSONObject ToJSON() {
+        JSONObject result = new JSONObject();
 
+        try {
+            result.put("name", name);
+            result.put("latitude", latitude);
+            result.put("longitude", longitude);
+            result.put("isCoordinateSet", isCoordinateSet);
+            result.put("placeid", placeid);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return new JSONObject();
+        }
+
+        return result;
+    }
+
+    @Override
+    public boolean FromJSON(JSONObject json) {
+        try {
+            this.name = json.getString("name");
+            this.latitude = json.getDouble("latitude");
+            this.longitude = json.getDouble("longitude");
+            this.isCoordinateSet = json.getBoolean("isCoordinateSet");
+            this.placeid = json.getString("placeid");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
 }

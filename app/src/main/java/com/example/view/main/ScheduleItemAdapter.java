@@ -11,7 +11,6 @@ import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
 import com.example.managers.ScheduleItemManager;
 import com.example.pim.R;
-import com.example.utility.map.GoogleMapAPI;
 
 /**
  * This class implements how to visualize ScheduleItem.
@@ -60,8 +59,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         if(this.viewType != viewType)
             return null;
 
-        ScheduleItemHolder result = new ScheduleItemHolder(parent);
-        return result;
+        return new ScheduleItemHolder(parent);
     }
 
     @Override
@@ -72,7 +70,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         // link
 
         // name
-        if(data.name != null)
+        if(!data.name.equals(""))
             holder.setName(data.name);
         else
             holder.setName("No Name");
@@ -84,12 +82,13 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             holder.setDest("Destination not allocated");
 
         // delta time
-        if(data.deltaTime != null)
+        if(!data.deltaTime.equals(""))
             holder.setTime(data.deltaTime);
         else
             holder.setTime("Dummy Time");
 
-        if(data.comment != null)
+        // comment
+        if(!data.comment.equals(""))
             holder.setComment(data.comment);
         else
             holder.setComment("");
@@ -124,7 +123,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
                     int indx = getAdapterPosition();
                     Log.d("ScheduleItemHolder", "item number : " + indx + " has clicked");
                     ScheduleItemData data = scheduleItemManager.getItemData(indx);
-                    GoogleMapAPI.Inst().UpdateScheduleItem(data);
+                    DataManager.Inst().getScheduleDataManager().updateScheduleItem(data);
                 }
             };
             this.itemView.setOnClickListener(click);

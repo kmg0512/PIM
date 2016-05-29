@@ -1,7 +1,11 @@
 package com.example.managers;
 
+import android.util.Log;
+
 import com.example.data.ScheduleItemData;
 import com.example.utility.jsonizer.JSONAble;
+import com.example.utility.map.GoogleMapAPI;
+import com.example.utility.map.GoogleMapLocation;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,6 +67,35 @@ public class ScheduleItemManager implements JSONAble {
         scheduleItemDatas.remove(data);
     }
 
+    public void updateScheduleItem(final ScheduleItemData data){
+
+        Log.d("GoogleMapAPI", "Updating ScheduleItem");
+        GoogleMapAPI.GoogleMapAPICallBack<GoogleMapLocation> getcurrent = new GoogleMapAPI.GoogleMapAPICallBack<GoogleMapLocation>() {
+            @Override
+            public void OnGet(GoogleMapLocation parameters) {
+                data.loc_origin = parameters;
+                GoogleMapAPI.GoogleMapAPICallBack<Integer> getdeltatime = new GoogleMapAPI.GoogleMapAPICallBack<Integer>() {
+                    @Override
+                    public void OnGet(Integer parameters) {
+                        Log.d("GoogleMapAPI", "o : " + data.loc_origin.getPlaceid() + " d : " + data.loc_destination.getPlaceid());
+                        Log.d("GoogleMapAPI", "deltatime : " + parameters);
+                        if(parameters == null)
+                            return;
+
+                        data.deltaTime = parameters.toString();
+                        DataManager.Inst().getScheduleDataManager().notifyUpdate(data);
+                    }
+                };
+
+                if(data.loc_origin == null || data.loc_destination == null) {
+                    return;
+                }
+                GoogleMapAPI.Inst().GetDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
+            }
+        };
+        GoogleMapAPI.Inst().GetCurrentLocation(getcurrent);
+    }
+
     // listeners
     public enum ScheduleItemUpdateType {
         ADD, CHANGE, REMOVED
@@ -99,6 +132,7 @@ public class ScheduleItemManager implements JSONAble {
         try {
             result.put("scheduleItemDatas", arr);
         } catch (JSONException e) {
+            e.printStackTrace();
             return new JSONObject();
         }
 
@@ -123,6 +157,7 @@ public class ScheduleItemManager implements JSONAble {
 
             scheduleItemDatas = datas;
         } catch (JSONException e) {
+            e.printStackTrace();
             return false;
         }
 
