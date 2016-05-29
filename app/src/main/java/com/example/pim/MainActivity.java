@@ -21,8 +21,12 @@ import android.widget.LinearLayout;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
+import com.example.utility.map.GoogleMapAPI;
+import com.example.utility.map.GoogleMapLocation;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -44,6 +48,16 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        // initialize google map api
+        GoogleMapAPI mapapiinst = GoogleMapAPI.Inst();
+        GoogleApiClient googleClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(mapapiinst)
+                .addOnConnectionFailedListener(mapapiinst)
+                .addApi(LocationServices.API)
+                .build();
+        mapapiinst.SetGoogleApiClient(googleClient);
+        mapapiinst.GetGoogleApiClient().connect();
 
 
         // initialize data
@@ -73,6 +87,9 @@ public class MainActivity extends AppCompatActivity
     public void onDestroy() {
         // log
         Log.d("MainActivity", "onDestroy");
+
+        // stop
+        GoogleMapAPI.Inst().GetGoogleApiClient().disconnect();
 
         // save data
         DataManager.Inst().onDestroy();
@@ -131,7 +148,11 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
-
+            // add dummy data
+            ScheduleItemData data = new ScheduleItemData();
+            data.loc_origin = new GoogleMapLocation("연세대학교 본관", 37.56633970000001, 126.9387511, "ChIJN35ssI6YfDURAZzUunmlinI");
+            data.loc_destination = new GoogleMapLocation("서울역", 37.554531, 126.970663, "ChIJM5xLpGaifDURb1sjwxADM-8");
+            DataManager.Inst().getScheduleDataManager().addItemData(data);
         } else if (id == R.id.nav_send) {
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 

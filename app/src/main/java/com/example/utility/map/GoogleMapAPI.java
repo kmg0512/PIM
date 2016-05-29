@@ -1,22 +1,17 @@
 package com.example.utility.map;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
-import com.example.pim.MainActivity;
-import com.example.utility.map.GoogleMapLocation;
 import com.example.utility.net.HttpsGetter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,46 +25,44 @@ import java.util.Collection;
 /**
  * Created by Hoon on 5/13/2016.
  */
-public class GoogleMapAPI {
+public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
     public interface GoogleMapAPICallBack<T> {
         void OnGet(T parameters);
     }
 
-    public static void Init(LocationManager manager) {
-        Log.d("GoogleMapAPI", "Initializing");
-
-        LocationListener locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                Log.d("LocationAAA", "lat " + location.getLatitude());
-                Log.d("LocationAAA", "lng " + location.getLongitude());
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        };
-
-        try {
-            manager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
-            manager.getLastKnownLocation()
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        }
+    // singleton
+    private static GoogleMapAPI inst;
+    public static GoogleMapAPI Inst() {
+        if(inst == null)
+            inst = new GoogleMapAPI();
+        return inst;
     }
 
-    public static void UpdateScheduleItem(final ScheduleItemData data){
+    public static void Init(GoogleApiClient client) {
+        Log.d("GoogleMapAPI", "Initializing");
+
+    }
+    private GoogleMapAPI() {
+
+    }
+
+
+    // data
+    GoogleApiClient mGoogleApiClient;
+
+    public void SetGoogleApiClient(GoogleApiClient client)
+    {
+        this.mGoogleApiClient = client;
+    }
+
+    public GoogleApiClient GetGoogleApiClient()
+    {
+        return mGoogleApiClient;
+    }
+
+    public void UpdateScheduleItem(final ScheduleItemData data){
+        /*
         // get destination name
         String dest = data.loc_destination.getName();
         if(dest == null || dest == "")
@@ -112,6 +105,33 @@ public class GoogleMapAPI {
 
         // request
         getter.Get(url, getListener);
+        */
+
+        Log.d("GoogleMapAPI", "Updating ScheduleItem");
+        GoogleMapAPICallBack<GoogleMapLocation> getcurrent = new GoogleMapAPICallBack<GoogleMapLocation>() {
+            @Override
+            public void OnGet(GoogleMapLocation parameters) {
+                data.loc_origin = parameters;
+                GoogleMapAPICallBack<Integer> getdeltatime = new GoogleMapAPICallBack<Integer>() {
+                    @Override
+                    public void OnGet(Integer parameters) {
+                        Log.d("GoogleMapAPI", "o : " + data.loc_origin.getPlaceid() + " d : " + data.loc_destination.getPlaceid());
+                        Log.d("GoogleMapAPI", "deltatime : " + parameters);
+                        if(parameters == null)
+                            return;
+
+                        data.deltaTime = parameters.toString();
+                        DataManager.Inst().getScheduleDataManager().notifyUpdate(data);
+                    }
+                };
+
+                if(data.loc_origin == null || data.loc_destination == null) {
+                    return;
+                }
+                GetDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
+            }
+        };
+        GetCurrentLocation(getcurrent);
     }
 
     /**
@@ -120,21 +140,24 @@ public class GoogleMapAPI {
      * @param dest should coordeinate setted
      * @param callback Time by seconds. null if cannot find.
      */
-    public static void GetDeltatTimeOf(GoogleMapLocation start, GoogleMapLocation dest, final GoogleMapAPICallBack<Integer> callback) {
+    public void GetDeltatTimeOf(GoogleMapLocation start, GoogleMapLocation dest, final GoogleMapAPICallBack<Integer> callback) {
         // check locations are verified
         if(!start.isCoordinateSet() || !dest.isCoordinateSet()) {
             callback.OnGet(null);
             return;
         }
 
+
         // create url
         String startplaceid = start.getPlaceid();
         String destplaceid = dest.getPlaceid();
         String url = "https://maps.googleapis.com/maps/api/directions/json?" +
                 "origin=place_id:" + startplaceid + "&" +
-                "destination=place_id" + destplaceid + "&" +
+                "destination=place_id:" + destplaceid + "&" +
                 "key=AIzaSyAwT2mGH1pGz1RMuPfB_tKE9fF3wnpIJz0" + "&" +
                 "mode=transit";
+
+        Log.d("GoogleMapAPI", "Getting delta time of" + startplaceid + " " + destplaceid);
 
         // create https getter
         HttpsGetter getter = new HttpsGetter();
@@ -149,7 +172,8 @@ public class GoogleMapAPI {
                     JSONObject root = new JSONObject(result.result);
 
                     // check ok
-                    if(root.getString("status") == "OK") {
+                    Log.d("GoogleMapAPI", "Getting deltatime : " + root.getString("status"));
+                    if(root.getString("status").equals("OK")) {
                         // parse json object
                         JSONObject route = root.getJSONArray("routes").getJSONObject(0);
                         JSONObject duration = route.getJSONArray("legs").getJSONObject(0).getJSONObject("duration");
@@ -174,7 +198,7 @@ public class GoogleMapAPI {
         getter.Get(url, getListener);
     }
 
-    public static void GetGeocodingsOf(String locname, final GoogleMapAPICallBack<Collection<GoogleMapLocation>> callback) {
+    public void GetGeocodingsOf(String locname, final GoogleMapAPICallBack<Collection<GoogleMapLocation>> callback) {
         // change location into right format
         String loc = locname.replace(" ", "+");
         try {
@@ -183,6 +207,9 @@ public class GoogleMapAPI {
             e.printStackTrace();
             return;
         }
+
+
+        Log.d("GoogleMapAPI", "Getting geocodings of" + locname);
 
         // create HTTPS requester
         HttpsGetter getter = new HttpsGetter();
@@ -201,7 +228,8 @@ public class GoogleMapAPI {
                     // check ok
                     ArrayList<GoogleMapLocation> locations = new ArrayList<>();
                     String status = root.getString("status");
-                    if(status == "OK") {
+                    Log.d("GoogleMapAPI", "Getting geocodings : " + status);
+                    if(status.equals("OK")) {
                         JSONArray resultlist = root.getJSONArray("results");
 
                         // for each jsonobject
@@ -221,7 +249,7 @@ public class GoogleMapAPI {
 
                         // callback
                         callback.OnGet(locations);
-                    } else if(status == "ZERO_RESULTS"){
+                    } else if(status.equals("ZERO_RESULTS")){
                         // callback
                         callback.OnGet(locations);
                     }
@@ -243,8 +271,102 @@ public class GoogleMapAPI {
     }
 
 
-    public static void GetCurrentLocation(GoogleMapAPICallBack<GoogleMapLocation> callback) {
+    public void GetCurrentLocation(final GoogleMapAPICallBack<GoogleMapLocation> callback) {
+        // check success
+        if(!mGoogleApiClient.isConnected())
+        {
+            callback.OnGet(null);
+            return;
+        }
 
+
+        Log.d("GoogleMapAPI", "Getting current location");
+
+        // get current location
+        double lat;
+        double lng;
+        try {
+            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            if(location == null)
+            {
+                callback.OnGet(null);
+                return;
+            }
+
+            lat = location.getLatitude();
+            lng = location.getLongitude();
+
+        } catch (SecurityException e) {
+            e.printStackTrace();
+            callback.OnGet(null);
+            return;
+        }
+
+        // create HTTPS requester
+        HttpsGetter getter = new HttpsGetter();
+        HttpsGetter.HttpsGetListener listener = new HttpsGetter.HttpsGetListener() {
+            @Override
+            public void OnGet(HttpsGetter.HttpsGetResult result) {
+                // check ok
+                if(!result.success) {
+                    callback.OnGet(null);
+                }
+
+                // parse json
+                try {
+                    JSONObject root = new JSONObject(result.result);
+
+                    // check ok
+                    String status = root.getString("status");
+                    Log.d("GoogleMapAPI", "Getting current location : " + status);
+                    if(status.equals("OK")) {
+                        JSONArray resultlist = root.getJSONArray("results");
+
+                        // for each jsonobject
+                        JSONObject obj = resultlist.getJSONObject(0);
+                        String name = obj.getJSONArray("address_components").getJSONObject(0).getString("short_name");
+                        double latitude = obj.getJSONObject("geometry").getJSONObject("location").getDouble("lat");
+                        double longitude = obj.getJSONObject("geometry").getJSONObject("location").getDouble("lng");
+                        String placeid = obj.getString("place_id");
+
+                        // create googlemaplocation
+                        GoogleMapLocation loc = new GoogleMapLocation(name, latitude, longitude, placeid);
+
+                        // callback
+                        callback.OnGet(loc);
+                    } else if(status.equals("ZERO_RESULTS")){
+                        // callback
+                        callback.OnGet(null);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    callback.OnGet(null);
+                }
+            }
+        };
+
+        // url
+        String url = "https://maps.googleapis.com/maps/api/geocode/json?" +
+                "latlng=" + lat + "," + lng + "&" +
+                "key=AIzaSyAM9tioD2rCRF5bL9QGdPv1kNlAG3_EFO4";
+
+        getter.Get(url, listener);
+    }
+
+
+    // connection info
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 }

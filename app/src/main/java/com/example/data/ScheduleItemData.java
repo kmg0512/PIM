@@ -1,7 +1,7 @@
 package com.example.data;
 
 import com.example.utility.jsonizer.JSONAble;
-import com.example.utility.net.GoogleMapLocation;
+import com.example.utility.map.GoogleMapLocation;
 
 import org.json.JSONException;
 import org.json.JSONObject;

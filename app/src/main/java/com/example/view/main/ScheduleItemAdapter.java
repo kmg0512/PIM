@@ -11,7 +11,7 @@ import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
 import com.example.managers.ScheduleItemManager;
 import com.example.pim.R;
-import com.example.utility.net.GoogleMapAPI;
+import com.example.utility.map.GoogleMapAPI;
 
 /**
  * This class implements how to visualize ScheduleItem.
@@ -124,7 +124,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
                     int indx = getAdapterPosition();
                     Log.d("ScheduleItemHolder", "item number : " + indx + " has clicked");
                     ScheduleItemData data = scheduleItemManager.getItemData(indx);
-                    GoogleMapAPI.UpdateScheduleItem(data);
+                    GoogleMapAPI.Inst().UpdateScheduleItem(data);
                 }
             };
             this.itemView.setOnClickListener(click);

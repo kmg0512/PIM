@@ -26,6 +26,7 @@ public class GoogleMapLocation {
         this.isCoordinateSet = true;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.placeid = placeid;
     }
 
     // name of google map location
