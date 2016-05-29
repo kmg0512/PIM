@@ -20,10 +20,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.example.data.ScheduleItemData;
-import com.example.data.SocialItemData;
 import com.example.managers.DataManager;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -65,6 +66,10 @@ public class MainActivity extends AppCompatActivity
         RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
         socialRecyclerView.setLayoutManager(socialLayoutManager);
         socialRecyclerView.setAdapter(new SocialItemAdapter(1));
+
+        // facebook sdk
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
 
         // log
         Log.d("MainActivity", "onCreate");
@@ -118,7 +123,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        Log.d("MainActivity", "enabled add schedule dialog");
+        Log.d("MainActivity", "enabled add schedule dialog_schedule");
 
         // Handle navigation view item clicks here.
         int id = item.getItemId();
@@ -138,7 +143,7 @@ public class MainActivity extends AppCompatActivity
 
             dialog.setTitle("일정 추가");
 
-            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
+            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog_schedule, null);
             dialog.setView(linearLayout);
 
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -158,6 +163,35 @@ public class MainActivity extends AppCompatActivity
                             data.comment = editText4.getText().toString();
 
                             DataManager.Inst().getScheduleDataManager().addItemData(data);
+
+                            break;
+                        case DialogInterface.BUTTON_NEGATIVE:
+                            break;
+                        case DialogInterface.BUTTON_NEUTRAL:
+                            break;
+                    }
+                }
+            };
+
+            dialog.setPositiveButton("Yes", listener);
+            dialog.setNegativeButton("No", listener);
+            dialog.setNeutralButton("Cancel", listener);
+
+            dialog.show();
+        } else if(id ==R.id.nav_login) {
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+
+            dialog.setTitle("Login");
+
+            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog_schedule, null);
+            dialog.setView(linearLayout);
+
+            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case DialogInterface.BUTTON_POSITIVE:
+
 
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
