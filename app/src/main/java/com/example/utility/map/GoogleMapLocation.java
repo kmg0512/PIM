@@ -66,7 +66,7 @@ public class GoogleMapLocation implements JSONAble{
     }
 
     @Override
-    public JSONObject ToJSON() {
+    public JSONObject toJSON() {
         JSONObject result = new JSONObject();
 
         try {
@@ -84,7 +84,7 @@ public class GoogleMapLocation implements JSONAble{
     }
 
     @Override
-    public boolean FromJSON(JSONObject json) {
+    public boolean fromJSON(JSONObject json) {
         try {
             this.name = json.getString("name");
             this.latitude = json.getDouble("latitude");

@@ -56,8 +56,8 @@ public class MainActivity extends AppCompatActivity
                 .addOnConnectionFailedListener(mapapiinst)
                 .addApi(LocationServices.API)
                 .build();
-        mapapiinst.SetGoogleApiClient(googleClient);
-        mapapiinst.GetGoogleApiClient().connect();
+        mapapiinst.setGoogleApiClient(googleClient);
+        mapapiinst.getGoogleApiClient().connect();
 
 
         // initialize data
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         Log.d("MainActivity", "onDestroy");
 
         // stop
-        GoogleMapAPI.Inst().GetGoogleApiClient().disconnect();
+        GoogleMapAPI.Inst().getGoogleApiClient().disconnect();
 
         // save data
         DataManager.Inst().onDestroy();

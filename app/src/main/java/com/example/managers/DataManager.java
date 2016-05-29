@@ -1,23 +1,17 @@
 package com.example.managers;
 
 import android.content.Context;
-import android.util.JsonReader;
 import android.util.Log;
 
-import com.example.data.ScheduleItemData;
 import com.example.data.SocialItemData;
-import com.example.utility.net.HttpsGetter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +90,7 @@ public class DataManager {
 
         try {
             JSONObject obj = new JSONObject(schedulesb.toString());
-            if(!scheduleItemManager.FromJSON(obj))
+            if(!scheduleItemManager.fromJSON(obj))
                 Log.d("DataManager", "Cannot make schedulemanager from json");
         } catch (JSONException e) {
             e.printStackTrace();
@@ -114,7 +108,7 @@ public class DataManager {
 
         try {
             FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(scheduleItemManager.ToJSON().toString(1).getBytes());
+            outputStream.write(scheduleItemManager.toJSON().toString(1).getBytes());
             outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();

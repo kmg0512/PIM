@@ -51,12 +51,12 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
     // data
     GoogleApiClient mGoogleApiClient;
 
-    public void SetGoogleApiClient(GoogleApiClient client)
+    public void setGoogleApiClient(GoogleApiClient client)
     {
         this.mGoogleApiClient = client;
     }
 
-    public GoogleApiClient GetGoogleApiClient()
+    public GoogleApiClient getGoogleApiClient()
     {
         return mGoogleApiClient;
     }
@@ -69,7 +69,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
      * @param dest should coordeinate setted
      * @param callback Time by seconds. null if cannot find.
      */
-    public void GetDeltatTimeOf(GoogleMapLocation start, GoogleMapLocation dest, final GoogleMapAPICallBack<Integer> callback) {
+    public void getDeltatTimeOf(GoogleMapLocation start, GoogleMapLocation dest, final GoogleMapAPICallBack<Integer> callback) {
         // check locations are verified
         if(!start.isCoordinateSet() || !dest.isCoordinateSet()) {
             callback.OnGet(null);
@@ -127,7 +127,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
         getter.Get(url, getListener);
     }
 
-    public void GetGeocodingsOf(String locname, final GoogleMapAPICallBack<Collection<GoogleMapLocation>> callback) {
+    public void getGeocodingsOf(String locname, final GoogleMapAPICallBack<Collection<GoogleMapLocation>> callback) {
         // change location into right format
         String loc = locname.replace(" ", "+");
         try {
@@ -200,7 +200,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
     }
 
 
-    public void GetCurrentLocation(final GoogleMapAPICallBack<GoogleMapLocation> callback) {
+    public void getCurrentLocation(final GoogleMapAPICallBack<GoogleMapLocation> callback) {
         // check success
         if(!mGoogleApiClient.isConnected())
         {

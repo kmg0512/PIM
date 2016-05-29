@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * This class stores all schedule item data.
@@ -90,10 +89,10 @@ public class ScheduleItemManager implements JSONAble {
                 if(data.loc_origin == null || data.loc_destination == null) {
                     return;
                 }
-                GoogleMapAPI.Inst().GetDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
+                GoogleMapAPI.Inst().getDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
             }
         };
-        GoogleMapAPI.Inst().GetCurrentLocation(getcurrent);
+        GoogleMapAPI.Inst().getCurrentLocation(getcurrent);
     }
 
     // listeners
@@ -120,12 +119,12 @@ public class ScheduleItemManager implements JSONAble {
 
     // JSON
     @Override
-    public JSONObject ToJSON() {
+    public JSONObject toJSON() {
         JSONObject result = new JSONObject();
         Collection<JSONObject> arrays = new ArrayList<>();
 
         for (ScheduleItemData data : scheduleItemDatas) {
-            arrays.add(data.ToJSON());
+            arrays.add(data.toJSON());
         }
 
         JSONArray arr = new JSONArray(arrays);
@@ -140,7 +139,7 @@ public class ScheduleItemManager implements JSONAble {
     }
 
     @Override
-    public boolean FromJSON(JSONObject json) {
+    public boolean fromJSON(JSONObject json) {
         try {
             JSONArray arr = json.getJSONArray("scheduleItemDatas");
 
@@ -149,7 +148,7 @@ public class ScheduleItemManager implements JSONAble {
             for (int i = 0; i < len; ++i) {
                 ScheduleItemData data = new ScheduleItemData();
 
-                if(!data.FromJSON(arr.getJSONObject(i)))
+                if(!data.fromJSON(arr.getJSONObject(i)))
                     return false;
 
                 datas.add(data);
