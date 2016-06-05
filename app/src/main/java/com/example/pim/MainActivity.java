@@ -179,34 +179,7 @@ public class MainActivity extends AppCompatActivity
 
             dialog.show();
         } else if(id ==R.id.nav_login) {
-            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
-            dialog.setTitle("Login");
-
-            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog_schedule, null);
-            dialog.setView(linearLayout);
-
-            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-
-
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                        case DialogInterface.BUTTON_NEUTRAL:
-                            break;
-                    }
-                }
-            };
-
-            dialog.setPositiveButton("Yes", listener);
-            dialog.setNegativeButton("No", listener);
-            dialog.setNeutralButton("Cancel", listener);
-
-            dialog.show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
