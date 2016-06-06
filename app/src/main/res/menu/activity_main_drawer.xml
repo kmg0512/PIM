@@ -35,8 +35,11 @@
     <item android:title="SNS">
         <menu>
             <item
-                android:id="@+id/nav_login"
-                android:title="Login" />
+                android:id="@+id/nav_login_facebook"
+                android:title="Facebook Login" />
+            <item
+                android:id="@+id/nav_login_twitter"
+                android:title="Twitter Login" />
         </menu>
     </item>
 

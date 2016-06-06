@@ -9,14 +9,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/twitter4j-core-4.0.4-javadoc" />
+            <option value="$PROJECT_DIR$/twitter4j-core-4.0.4" />
           </set>
         </option>
         <option name="myModules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/twitter4j-core-4.0.4-javadoc" />
+            <option value="$PROJECT_DIR$/twitter4j-core-4.0.4" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,8 +22,17 @@ import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
+
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
+import twitter4j.Twitter;
+import twitter4j.TwitterFactory;
+import twitter4j.auth.AccessToken;
+import twitter4j.auth.RequestToken;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -178,7 +186,9 @@ public class MainActivity extends AppCompatActivity
             dialog.setNeutralButton("Cancel", listener);
 
             dialog.show();
-        } else if(id ==R.id.nav_login) {
+        } else if(id == R.id.nav_login_facebook) {
+
+        } else if(id == R.id.nav_login_twitter) {
 
         }
 
