@@ -18,7 +18,5 @@ public class AlarmReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // announce alarm
         Log.d("AlarmReceiver", "Announce alarm : " + intent.getStringExtra(EXTRA_ALARM_NAME));
-        Toast t = Toast.makeText(context, "Alarm Sample", Toast.LENGTH_LONG);
-        t.show();
     }
 }

@@ -22,17 +22,22 @@
             </intent-filter>
         </activity>
 
-
         <receiver
             android:name="com.example.data.AlarmReceiver"
             android:exported="false" />
-
         <receiver
             android:name="com.example.managers.BackgroundManager"
             android:exported="false" />
 
+        <receiver
+            android:name="com.example.managers.TempAlarmReceiver"
+            android:exported="false" />
+
         <service
             android:name="com.example.managers.PIMAlarmService"
+            android:exported="false" />
+        <service
+            android:name="com.example.managers.MyIntentService"
             android:exported="false"></service>
     </application>
 

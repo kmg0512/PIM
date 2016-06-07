@@ -19,14 +19,13 @@ public class ScheduleItemData implements JSONAble{
     public GoogleMapLocation loc_origin;
     public GoogleMapLocation loc_destination;
 
-    @NonNull
-    public String deltaTime;
+    public long deltaTime;
 
     public ScheduleItemData() {
         name = "";
         time = "";
         comment = "";
-        deltaTime = "";
+        deltaTime = 0;
         loc_origin = new GoogleMapLocation();
         loc_destination = new GoogleMapLocation();
     }
@@ -57,7 +56,7 @@ public class ScheduleItemData implements JSONAble{
             this.name = json.getString("name");
             this.time = json.getString("time");
             this.comment = json.getString("comment");
-            this.deltaTime = json.getString("deltaTime");
+            this.deltaTime = json.getLong("deltaTime");
 
             this.loc_origin = new GoogleMapLocation();
             this.loc_origin.fromJSON(json.getJSONObject("loc_origin"));

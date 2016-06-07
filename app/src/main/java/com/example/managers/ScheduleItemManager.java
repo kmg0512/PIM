@@ -59,12 +59,14 @@ public class ScheduleItemManager implements JSONAble {
 
     // data manipulation
     public void addItemData(ScheduleItemData data) {
+        Log.d("ScheduleItemManager", "Add ScheduleItem");
         scheduleItemDatas.add(data);
         for (ScheduleItemUpdateCallBack callBack : callBacks) {
             callBack.onUpdate(data, ScheduleItemUpdateType.ADD, this);
         }
     }
     public void removeItemData(ScheduleItemData data) {
+        Log.d("ScheduleItemManager", "Remove ScheduleItem");
         for (ScheduleItemUpdateCallBack callBack : callBacks) {
             callBack.onUpdate(data, ScheduleItemUpdateType.REMOVED, this);
         }
@@ -72,21 +74,20 @@ public class ScheduleItemManager implements JSONAble {
     }
 
     public void updateScheduleItem(final ScheduleItemData data){
-
-        Log.d("GoogleMapAPI", "Updating ScheduleItem");
+        Log.d("ScheduleItemManager", "Updating ScheduleItem");
         GoogleMapAPI.GoogleMapAPICallBack<GoogleMapLocation> getcurrent = new GoogleMapAPI.GoogleMapAPICallBack<GoogleMapLocation>() {
             @Override
             public void OnGet(GoogleMapLocation parameters) {
                 data.loc_origin = parameters;
-                GoogleMapAPI.GoogleMapAPICallBack<Integer> getdeltatime = new GoogleMapAPI.GoogleMapAPICallBack<Integer>() {
+                GoogleMapAPI.GoogleMapAPICallBack<Long> getdeltatime = new GoogleMapAPI.GoogleMapAPICallBack<Long>() {
                     @Override
-                    public void OnGet(Integer parameters) {
-                        Log.d("GoogleMapAPI", "o : " + data.loc_origin.getPlaceid() + " d : " + data.loc_destination.getPlaceid());
-                        Log.d("GoogleMapAPI", "deltatime : " + parameters);
+                    public void OnGet(Long parameters) {
+                        Log.d("ScheduleItemManager", "o : " + data.loc_origin.getPlaceid() + " d : " + data.loc_destination.getPlaceid());
+                        Log.d("ScheduleItemManager", "deltatime : " + parameters);
                         if(parameters == null)
                             return;
 
-                        data.deltaTime = parameters.toString();
+                        data.deltaTime = parameters;
                         notifyUpdate(data);
                     }
                 };
@@ -174,6 +175,8 @@ public class ScheduleItemManager implements JSONAble {
         ScheduleItemManager result = new ScheduleItemManager();
 
         String filename = "schedules.json";
+        Log.d("ScheduleItemManager", "Loading from :  " + filename);
+
         StringBuilder stringbuilder = new StringBuilder();
 
         // read json
@@ -202,25 +205,23 @@ public class ScheduleItemManager implements JSONAble {
             e.printStackTrace();
         }
 
+        Log.d("ScheduleItemManager", "Loading Complete");
+
         return result;
     }
 
     public void Save(Context context)
     {
         String filename = "schedules.json";
+        Log.d("ScheduleItemManager", "Saving to :  " + filename);
 
         try {
             FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(toJSON().toString(1).getBytes());
+            outputStream.write(toJSON().toString(0).getBytes());
             outputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-
-    // actions
-    void refreshScheduleItems() {
-
+        Log.d("ScheduleItemManager", "Saving Complete");
     }
 }

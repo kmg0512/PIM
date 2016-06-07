@@ -3,6 +3,7 @@ package com.example.pim;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -32,9 +33,11 @@ import android.widget.TimePicker;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.BackgroundManager;
+import com.example.managers.MyIntentService;
 import com.example.managers.PIMAlarmService;
 import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
+import com.example.managers.TempAlarmReceiver;
 import com.example.utility.map.GoogleMapAPI;
 import com.example.utility.map.GoogleMapLocation;
 import com.example.view.main.ScheduleItemAdapter;
@@ -68,25 +71,12 @@ public class MainActivity extends AppCompatActivity
         // initialize google map api
         GoogleMapAPI.Init(this);
 
-        // initialize data
-        //DataManager.Init(this);
-        //DataManager.Inst().onCreate();
-
-        // add alarm service
-        if(!isMyServiceRunning(PIMAlarmService.class)) {
-
-            Intent alarmservice = new Intent(this, PIMAlarmService.class);
-            startService(alarmservice);
-        }
-
-
         // add sample alarm
         AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, BackgroundManager.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent alarmReceiver = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + 3 * 1000, 120 * 1000, alarmReceiver);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 3 * 1000, 180 * 1000, alarmReceiver);
         
 
         // create layout manager
@@ -170,14 +160,36 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
+            final ScheduleItemData data = new ScheduleItemData();
+            data.name = "고급 시계 수리";
+            data.loc_destination = new GoogleMapLocation("청담동", 37.5175829, 127.0416468, "ChIJgxsKDHWkfDUR1YdLXxblctM");
+            data.comment = "";
 
+            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                @Override
+                public void doWith(ScheduleItemManager scheduleItemManager) {
+                    scheduleItemManager.addItemData(data);
+                }
+            });
         } else if (id == R.id.nav_manage) {
+            // add dummy data
+            final ScheduleItemData data = new ScheduleItemData();
+            data.name = "용던레이드";
+            data.loc_destination = new GoogleMapLocation("용산역", 37.529626, 126.96347, "ChIJUcFjVAOifDUR0CAVWLo7ZOg");
+            data.comment = "메모리 8G, SSD 256GB, 파워 700W";
 
+            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                @Override
+                public void doWith(ScheduleItemManager scheduleItemManager) {
+                    scheduleItemManager.addItemData(data);
+                }
+            });
         } else if (id == R.id.nav_share) {
             // add dummy data
             final ScheduleItemData data = new ScheduleItemData();
-            data.loc_origin = new GoogleMapLocation("연세대학교 본관", 37.56633970000001, 126.9387511, "ChIJN35ssI6YfDURAZzUunmlinI");
-            data.loc_destination = new GoogleMapLocation("서울역", 37.554531, 126.970663, "ChIJM5xLpGaifDURb1sjwxADM-8");
+            data.name = "종강파티";
+            data.loc_destination = new GoogleMapLocation("안암역", 37.586296, 127.029137, "ChIJ35b3zLq8fDURvog9-eIQPBg");
+            data.comment = "아 곧 종강이다!!!";
 
             SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                 @Override

@@ -13,6 +13,8 @@ import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
 import com.example.pim.R;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * This class implements how to visualize ScheduleItem.
  */
@@ -51,6 +53,8 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             }
         };
 
+        if(context == null)
+            Log.e("What", "is Wrong????");
         SharedDataManager.Inst(context).giveScheduleTaskConst(new SharedDataManager.Task<ScheduleItemManager>() {
             @Override
             public void doWith(ScheduleItemManager scheduleItemManager) {
@@ -60,12 +64,6 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
     }
 
     public void onDestroy() {
-        SharedDataManager.Inst(context).giveScheduleTaskConst(new SharedDataManager.Task<ScheduleItemManager>() {
-            @Override
-            public void doWith(ScheduleItemManager scheduleItemManager) {
-                scheduleItemManager.removeUpdateListener(onItemUpdate);
-            }
-        });
     }
 
     @Override
@@ -97,15 +95,17 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
 
         // dest
         if(data[0].loc_destination != null)
-            holder.setDest(data[0].loc_destination.getName());
+            holder.setDest("장소 : " + data[0].loc_destination.getName());
         else
             holder.setDest("Destination not allocated");
 
         // delta time
-        if(!data[0].deltaTime.equals(""))
-            holder.setTime(data[0].deltaTime);
+        if(data[0].deltaTime != 0) {
+            long min = TimeUnit.SECONDS.toMinutes(data[0].deltaTime);
+            holder.setTime("약 " + min + "분 소요");
+        }
         else
-            holder.setTime("Dummy Time");
+            holder.setTime("시간 미정");
 
         // comment
         if(!data[0].comment.equals(""))

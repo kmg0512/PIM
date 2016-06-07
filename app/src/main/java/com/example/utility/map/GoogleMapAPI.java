@@ -74,7 +74,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
      * @param dest should coordeinate setted
      * @param callback Time by seconds. null if cannot find.
      */
-    public void getDeltatTimeOf(GoogleMapLocation start, GoogleMapLocation dest, final GoogleMapAPICallBack<Integer> callback) {
+    public void getDeltatTimeOf(GoogleMapLocation start, GoogleMapLocation dest, final GoogleMapAPICallBack<Long> callback) {
         // check locations are verified
         if(!start.isCoordinateSet() || !dest.isCoordinateSet()) {
             callback.OnGet(null);
@@ -113,7 +113,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
                         JSONObject duration = route.getJSONArray("legs").getJSONObject(0).getJSONObject("duration");
 
                         // create time
-                        Integer time = duration.getInt("value");
+                        Long time = duration.getLong("value");
 
                         // callback
                         callback.OnGet(time);
