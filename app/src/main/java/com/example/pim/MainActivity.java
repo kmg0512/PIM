@@ -1,7 +1,13 @@
 package com.example.pim;
 
+import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -20,7 +26,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import com.example.data.ScheduleItemData;
+import com.example.managers.BackgroundManager;
 import com.example.managers.DataManager;
+import com.example.managers.PIMAlarmService;
+import com.example.managers.ScheduleItemManager;
+import com.example.managers.SharedDataManager;
 import com.example.utility.map.GoogleMapAPI;
 import com.example.utility.map.GoogleMapLocation;
 import com.example.view.main.ScheduleItemAdapter;
@@ -32,7 +42,7 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     ScheduleItemAdapter scheduleItemAdapter;
-
+    GoogleApiClient googleClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +61,7 @@ public class MainActivity extends AppCompatActivity
 
         // initialize google map api
         GoogleMapAPI mapapiinst = GoogleMapAPI.Inst();
-        GoogleApiClient googleClient = new GoogleApiClient.Builder(this)
+        googleClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(mapapiinst)
                 .addOnConnectionFailedListener(mapapiinst)
                 .addApi(LocationServices.API)
@@ -59,10 +69,28 @@ public class MainActivity extends AppCompatActivity
         mapapiinst.setGoogleApiClient(googleClient);
         mapapiinst.getGoogleApiClient().connect();
 
-
         // initialize data
-        DataManager.Init(this);
-        DataManager.Inst().onCreate();
+        //DataManager.Init(this);
+        //DataManager.Inst().onCreate();
+
+        // add alarm service
+        if(!isMyServiceRunning(PIMAlarmService.class)) {
+
+            Intent alarmservice = new Intent(this, PIMAlarmService.class);
+            startService(alarmservice);
+        }
+
+
+        // add sample alarm
+        AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, BackgroundManager.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent alarmReceiver = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + 3 * 1000, 120 * 1000, alarmReceiver);
+
+
+
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -90,9 +118,6 @@ public class MainActivity extends AppCompatActivity
 
         // stop
         GoogleMapAPI.Inst().getGoogleApiClient().disconnect();
-
-        // save data
-        DataManager.Inst().onDestroy();
 
         scheduleItemAdapter.onDestroy();
 
@@ -149,10 +174,16 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_share) {
             // add dummy data
-            ScheduleItemData data = new ScheduleItemData();
+            final ScheduleItemData data = new ScheduleItemData();
             data.loc_origin = new GoogleMapLocation("연세대학교 본관", 37.56633970000001, 126.9387511, "ChIJN35ssI6YfDURAZzUunmlinI");
             data.loc_destination = new GoogleMapLocation("서울역", 37.554531, 126.970663, "ChIJM5xLpGaifDURb1sjwxADM-8");
-            DataManager.Inst().getScheduleDataManager().addItemData(data);
+
+            SharedDataManager.Inst(this).giveTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                @Override
+                public void doWith(ScheduleItemManager scheduleItemManager) {
+                    scheduleItemManager.addItemData(data);
+                }
+            });
         } else if (id == R.id.nav_send) {
             AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
@@ -171,13 +202,18 @@ public class MainActivity extends AppCompatActivity
                             EditText editText3 = (EditText) linearLayout.findViewById(R.id.editText3);
                             EditText editText4 = (EditText) linearLayout.findViewById(R.id.editText4);
 
-                            ScheduleItemData data = new ScheduleItemData();
+                            final ScheduleItemData data = new ScheduleItemData();
                             data.name = editText1.getText().toString();
                             data.time = editText2.getText().toString();
                             data.loc_destination.setName(editText3.getText().toString());
                             data.comment = editText4.getText().toString();
 
-                            DataManager.Inst().getScheduleDataManager().addItemData(data);
+                            SharedDataManager.Inst(MainActivity.this).giveTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                                @Override
+                                public void doWith(ScheduleItemManager scheduleItemManager) {
+                                    scheduleItemManager.addItemData(data);
+                                }
+                            });
 
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
@@ -200,6 +236,16 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    // http://stackoverflow.com/questions/600207/how-to-check-if-a-service-is-running-on-android
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 
 }

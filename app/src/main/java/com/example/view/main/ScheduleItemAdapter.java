@@ -1,5 +1,6 @@
 package com.example.view.main;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
 import com.example.managers.ScheduleItemManager;
+import com.example.managers.SharedDataManager;
 import com.example.pim.R;
 
 /**
@@ -19,18 +21,21 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
     private ScheduleItemManager scheduleItemManager;
     private ScheduleItemManager.ScheduleItemUpdateCallBack onItemUpdate;
 
+    private Context context;
 
-    public ScheduleItemAdapter(int viewType) {
+    public ScheduleItemAdapter(Context context, int viewType) {
         super(viewType);
 
+        this.context = context;
+
         // set reference
-        scheduleItemManager = DataManager.Inst().getScheduleDataManager();
+        //scheduleItemManager = DataManager.Inst().getScheduleDataManager();
 
         // set listener
         onItemUpdate = new ScheduleItemManager.ScheduleItemUpdateCallBack() {
             @Override
-            public void onUpdate(ScheduleItemData data, ScheduleItemManager.ScheduleItemUpdateType type) {
-                int pos = scheduleItemManager.getIndexof(data);
+            public void onUpdate(ScheduleItemData data, ScheduleItemManager.ScheduleItemUpdateType type, ScheduleItemManager manager) {
+                int pos = manager.getIndexof(data);
                 Log.d("ScheduleItemAdapter", "Item at " + pos + " is updated");
 
                 switch (type)
@@ -47,11 +52,13 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
                 }
             }
         };
+
+        SharedDataManager.Inst(context)
         DataManager.Inst().getScheduleDataManager().addUpdateListener(onItemUpdate);
     }
 
     public void onDestroy() {
-        DataManager.Inst().getScheduleDataManager().removeUpdateListener(onItemUpdate);
+        SharedDataManager.Inst(context)
     }
 
     @Override

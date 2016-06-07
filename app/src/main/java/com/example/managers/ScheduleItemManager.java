@@ -1,5 +1,6 @@
 package com.example.managers;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.example.data.ScheduleItemData;
@@ -11,6 +12,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -56,12 +61,12 @@ public class ScheduleItemManager implements JSONAble {
     public void addItemData(ScheduleItemData data) {
         scheduleItemDatas.add(data);
         for (ScheduleItemUpdateCallBack callBack : callBacks) {
-            callBack.onUpdate(data, ScheduleItemUpdateType.ADD);
+            callBack.onUpdate(data, ScheduleItemUpdateType.ADD, this);
         }
     }
     public void removeItemData(ScheduleItemData data) {
         for (ScheduleItemUpdateCallBack callBack : callBacks) {
-            callBack.onUpdate(data, ScheduleItemUpdateType.REMOVED);
+            callBack.onUpdate(data, ScheduleItemUpdateType.REMOVED, this);
         }
         scheduleItemDatas.remove(data);
     }
@@ -82,7 +87,7 @@ public class ScheduleItemManager implements JSONAble {
                             return;
 
                         data.deltaTime = parameters.toString();
-                        DataManager.Inst().getScheduleDataManager().notifyUpdate(data);
+                        notifyUpdate(data);
                     }
                 };
 
@@ -100,12 +105,12 @@ public class ScheduleItemManager implements JSONAble {
         ADD, CHANGE, REMOVED
     }
     public static interface ScheduleItemUpdateCallBack {
-        void onUpdate(ScheduleItemData data, ScheduleItemUpdateType type);
+        void onUpdate(ScheduleItemData data, ScheduleItemUpdateType type, ScheduleItemManager manager);
     }
 
     public void notifyUpdate(ScheduleItemData data) {
         for (ScheduleItemUpdateCallBack callBack : callBacks) {
-            callBack.onUpdate(data, ScheduleItemUpdateType.CHANGE);
+            callBack.onUpdate(data, ScheduleItemUpdateType.CHANGE, this);
         }
     }
     public void addUpdateListener(ScheduleItemUpdateCallBack callBack) {
@@ -161,6 +166,55 @@ public class ScheduleItemManager implements JSONAble {
         }
 
         return true;
+    }
+
+    public static ScheduleItemManager Load(Context context)
+    {
+        ScheduleItemManager result = new ScheduleItemManager();
+
+        String filename = "schedules.json";
+        StringBuilder stringbuilder = new StringBuilder();
+
+        // read json
+        try {
+            FileInputStream inputStream = context.openFileInput(filename);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            // read to string
+            String line;
+            while((line = reader.readLine()) != null) {
+                stringbuilder.append(line).append('\n');
+            }
+            reader.close();
+
+            inputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // make json to object
+        try {
+            JSONObject obj = new JSONObject(stringbuilder.toString());
+            if(!result.fromJSON(obj))
+                Log.d("ScheduleItemManager", "Cannot make schedule item manager from json");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public void Save(Context context)
+    {
+        String filename = "schedules.json";
+
+        try {
+            FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(toJSON().toString(1).getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

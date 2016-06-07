@@ -20,16 +20,16 @@ import java.util.List;
  */
 public class DataManager {
     // singleton
-    public static void Init(Context context){
-        inst = new DataManager(context);
-    }
+    //public static void Init(Context context){
+    //    inst = new DataManager(context);
+    //}
 
-    public static DataManager Inst() {
-        if(inst == null)
-            inst = new DataManager();
-
-        return inst;
-    }
+    //public static DataManager Inst() {
+    //    if(inst == null)
+    //        inst = new DataManager();
+//
+     //   return inst;
+    //}
     private static DataManager inst;
 
     // refer
@@ -69,32 +69,7 @@ public class DataManager {
             return;
         Log.d("DataManager", "loading data...");
 
-        String filename = "schedules.json";
-        StringBuilder schedulesb = new StringBuilder();
-
-        try {
-            FileInputStream inputStream = context.openFileInput(filename);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            // read to string
-            String line;
-            while((line = reader.readLine()) != null) {
-                schedulesb.append(line).append('\n');
-            }
-            reader.close();
-
-            inputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        try {
-            JSONObject obj = new JSONObject(schedulesb.toString());
-            if(!scheduleItemManager.fromJSON(obj))
-                Log.d("DataManager", "Cannot make schedulemanager from json");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        scheduleItemManager = ScheduleItemManager.Load(context);
 
         Log.d("DataManager", "loading data done");
     };
@@ -102,17 +77,10 @@ public class DataManager {
     private void saveData() {
         if (context == null)
             return;
+
         Log.d("DataManager", "saving data...");
 
-        String filename = "schedules.json";
-
-        try {
-            FileOutputStream outputStream = context.openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(scheduleItemManager.toJSON().toString(1).getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        scheduleItemManager.Save(context);
 
         Log.d("DataManager", "saving data done");
     }
