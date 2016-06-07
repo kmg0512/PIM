@@ -1,13 +1,12 @@
 package com.example.utility.map;
 
+import android.content.Context;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.example.data.ScheduleItemData;
-import com.example.managers.DataManager;
 import com.example.utility.net.HttpsGetter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,35 +32,41 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
 
     // singleton
     private static GoogleMapAPI inst;
+    private static GoogleApiClient client;
+
     public static GoogleMapAPI Inst() {
-        if(inst == null)
-            inst = new GoogleMapAPI();
+        if(inst == null || client == null || (!client.isConnected()))
+            return null;
+
         return inst;
     }
 
-    public static void Init(GoogleApiClient client) {
+    public static void Init(Context context) {
         Log.d("GoogleMapAPI", "Initializing");
+        inst = new GoogleMapAPI();
+        if(client != null)
+            return;
 
+        client = new GoogleApiClient.Builder(context)
+                .addConnectionCallbacks(inst)
+                .addOnConnectionFailedListener(inst)
+                .addApi(LocationServices.API)
+                .build();
+        client.connect();
     }
+
+    public static void Destroy() {
+        if(client.isConnected())
+            client.disconnect();
+
+        client = null;
+        inst = null;
+    }
+
+
     private GoogleMapAPI() {
 
     }
-
-
-    // data
-    GoogleApiClient mGoogleApiClient;
-
-    public void setGoogleApiClient(GoogleApiClient client)
-    {
-        this.mGoogleApiClient = client;
-    }
-
-    public GoogleApiClient getGoogleApiClient()
-    {
-        return mGoogleApiClient;
-    }
-
-
 
     /**
      *
@@ -202,7 +207,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
 
     public void getCurrentLocation(final GoogleMapAPICallBack<GoogleMapLocation> callback) {
         // check success
-        if(!mGoogleApiClient.isConnected())
+        if(!client.isConnected())
         {
             callback.OnGet(null);
             return;
@@ -215,7 +220,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
         double lat;
         double lng;
         try {
-            Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            Location location = LocationServices.FusedLocationApi.getLastLocation(client);
             if(location == null)
             {
                 callback.OnGet(null);

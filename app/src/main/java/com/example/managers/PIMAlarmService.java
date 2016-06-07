@@ -61,7 +61,7 @@ public class PIMAlarmService extends IntentService {
      * @see IntentService
      */
     // TODO: Customize helper method
-    public static void startActionCleanAlarm(Context context) {
+    public static void startActionClearAlarm(Context context) {
         Intent intent = new Intent(context, PIMAlarmService.class);
         intent.setAction(ACTION_CLEAR_ALARM);
         context.startService(intent);
@@ -76,7 +76,7 @@ public class PIMAlarmService extends IntentService {
     // TODO: Customize helper method
     public static void startActionAddAlarm(Context context, long deltatime, String name, long time) {
         Intent intent = new Intent(context, PIMAlarmService.class);
-        intent.setAction(ACTION_CLEAR_ALARM);
+        intent.setAction(ACTION_ADD_ALARM);
         intent.putExtra(EXTRA_DELTA_TIME, deltatime);
         intent.putExtra(EXTRA_ALARM_NAME, name);
         intent.putExtra(EXTRA_ALARM_TIME, time);

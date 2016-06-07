@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.data.ScheduleItemData;
-import com.example.managers.DataManager;
 import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
 import com.example.pim.R;
@@ -18,7 +17,6 @@ import com.example.pim.R;
  * This class implements how to visualize ScheduleItem.
  */
 public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapter.ScheduleItemHolder> {
-    private ScheduleItemManager scheduleItemManager;
     private ScheduleItemManager.ScheduleItemUpdateCallBack onItemUpdate;
 
     private Context context;
@@ -53,12 +51,21 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             }
         };
 
-        SharedDataManager.Inst(context)
-        DataManager.Inst().getScheduleDataManager().addUpdateListener(onItemUpdate);
+        SharedDataManager.Inst(context).giveScheduleTaskConst(new SharedDataManager.Task<ScheduleItemManager>() {
+            @Override
+            public void doWith(ScheduleItemManager scheduleItemManager) {
+                scheduleItemManager.addUpdateListener(onItemUpdate);
+            }
+        });
     }
 
     public void onDestroy() {
-        SharedDataManager.Inst(context)
+        SharedDataManager.Inst(context).giveScheduleTaskConst(new SharedDataManager.Task<ScheduleItemManager>() {
+            @Override
+            public void doWith(ScheduleItemManager scheduleItemManager) {
+                scheduleItemManager.removeUpdateListener(onItemUpdate);
+            }
+        });
     }
 
     @Override
@@ -70,40 +77,54 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
     }
 
     @Override
-    public void onBindViewHolder(ScheduleItemHolder holder, int position) {
+    public void onBindViewHolder(ScheduleItemHolder holder, final int position) {
         // find
-        ScheduleItemData data = scheduleItemManager.getItemData(position);
+        final ScheduleItemData[] data = { null };
+        SharedDataManager.Inst(context).giveScheduleTaskConst(new SharedDataManager.Task<ScheduleItemManager>() {
+            @Override
+            public void doWith(ScheduleItemManager manager) {
+                data[0] = manager.getItemData(position);
+            }
+        });
 
         // link
 
         // name
-        if(!data.name.equals(""))
-            holder.setName(data.name);
+        if(!data[0].name.equals(""))
+            holder.setName(data[0].name);
         else
             holder.setName("No Name");
 
         // dest
-        if(data.loc_destination != null)
-            holder.setDest(data.loc_destination.getName());
+        if(data[0].loc_destination != null)
+            holder.setDest(data[0].loc_destination.getName());
         else
             holder.setDest("Destination not allocated");
 
         // delta time
-        if(!data.deltaTime.equals(""))
-            holder.setTime(data.deltaTime);
+        if(!data[0].deltaTime.equals(""))
+            holder.setTime(data[0].deltaTime);
         else
             holder.setTime("Dummy Time");
 
         // comment
-        if(!data.comment.equals(""))
-            holder.setComment(data.comment);
+        if(!data[0].comment.equals(""))
+            holder.setComment(data[0].comment);
         else
             holder.setComment("");
     }
 
     @Override
     public int getItemCount() {
-        return scheduleItemManager.getItemsize();
+        final int[] size = new int[1];
+        SharedDataManager.Inst(context).giveScheduleTaskConst(new SharedDataManager.Task<ScheduleItemManager>() {
+            @Override
+            public void doWith(ScheduleItemManager manager) {
+                size[0] = manager.getItemsize();
+            }
+        });
+
+        return size[0];
     }
 
     class ScheduleItemHolder extends RecyclerView.ViewHolder {
@@ -127,12 +148,18 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
             View.OnClickListener click = new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int indx = getAdapterPosition();
+                    final int indx = getAdapterPosition();
                     Log.d("ScheduleItemHolder", "item number : " + indx + " has clicked");
-                    ScheduleItemData data = scheduleItemManager.getItemData(indx);
-                    DataManager.Inst().getScheduleDataManager().updateScheduleItem(data);
+                    SharedDataManager.Inst(context).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                        @Override
+                        public void doWith(ScheduleItemManager manager) {
+                            ScheduleItemData data = manager.getItemData(indx);
+                            manager.updateScheduleItem(data);
+                        }
+                    });
                 }
             };
+
             this.itemView.setOnClickListener(click);
         }
 

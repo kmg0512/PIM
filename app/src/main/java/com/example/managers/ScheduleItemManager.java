@@ -94,6 +94,7 @@ public class ScheduleItemManager implements JSONAble {
                 if(data.loc_origin == null || data.loc_destination == null) {
                     return;
                 }
+
                 GoogleMapAPI.Inst().getDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
             }
         };

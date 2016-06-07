@@ -27,7 +27,6 @@ import android.widget.LinearLayout;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.BackgroundManager;
-import com.example.managers.DataManager;
 import com.example.managers.PIMAlarmService;
 import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
@@ -60,14 +59,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // initialize google map api
-        GoogleMapAPI mapapiinst = GoogleMapAPI.Inst();
-        googleClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(mapapiinst)
-                .addOnConnectionFailedListener(mapapiinst)
-                .addApi(LocationServices.API)
-                .build();
-        mapapiinst.setGoogleApiClient(googleClient);
-        mapapiinst.getGoogleApiClient().connect();
+        GoogleMapAPI.Init(this);
 
         // initialize data
         //DataManager.Init(this);
@@ -88,9 +80,7 @@ public class MainActivity extends AppCompatActivity
         PendingIntent alarmReceiver = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                 SystemClock.elapsedRealtime() + 3 * 1000, 120 * 1000, alarmReceiver);
-
-
-
+        
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -99,7 +89,7 @@ public class MainActivity extends AppCompatActivity
         // create schedule view
         RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
         scheduleRecyclerView.setLayoutManager(scheduleLayoutManager);
-        scheduleItemAdapter = new ScheduleItemAdapter(0);
+        scheduleItemAdapter = new ScheduleItemAdapter(this, 0);
         scheduleRecyclerView.setAdapter(scheduleItemAdapter);
 
         // create social view
@@ -116,10 +106,14 @@ public class MainActivity extends AppCompatActivity
         // log
         Log.d("MainActivity", "onDestroy");
 
-        // stop
-        GoogleMapAPI.Inst().getGoogleApiClient().disconnect();
-
+        // destroy
         scheduleItemAdapter.onDestroy();
+
+        // stop
+        GoogleMapAPI.Destroy();
+
+        // remove all data
+        SharedDataManager.Inst(this).clear();
 
         super.onDestroy();
     }
@@ -178,7 +172,7 @@ public class MainActivity extends AppCompatActivity
             data.loc_origin = new GoogleMapLocation("연세대학교 본관", 37.56633970000001, 126.9387511, "ChIJN35ssI6YfDURAZzUunmlinI");
             data.loc_destination = new GoogleMapLocation("서울역", 37.554531, 126.970663, "ChIJM5xLpGaifDURb1sjwxADM-8");
 
-            SharedDataManager.Inst(this).giveTask(new SharedDataManager.Task<ScheduleItemManager>() {
+            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                 @Override
                 public void doWith(ScheduleItemManager scheduleItemManager) {
                     scheduleItemManager.addItemData(data);
@@ -208,7 +202,7 @@ public class MainActivity extends AppCompatActivity
                             data.loc_destination.setName(editText3.getText().toString());
                             data.comment = editText4.getText().toString();
 
-                            SharedDataManager.Inst(MainActivity.this).giveTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                            SharedDataManager.Inst(MainActivity.this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                                 @Override
                                 public void doWith(ScheduleItemManager scheduleItemManager) {
                                     scheduleItemManager.addItemData(data);

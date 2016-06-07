@@ -18,9 +18,9 @@ public class BackgroundManager extends BroadcastReceiver {
 
         Log.d("BackgroundManager", "Updating Schedule Item");
 
-        PIMAlarmService.startActionCleanAlarm(context);
+        PIMAlarmService.startActionClearAlarm(context);
 
-        SharedDataManager.Inst(context).giveTask(new SharedDataManager.Task<ScheduleItemManager>() {
+        SharedDataManager.Inst(context).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
             @Override
             public void doWith(ScheduleItemManager manager) {
                 int length = manager.getItemsize();
@@ -45,21 +45,10 @@ public class BackgroundManager extends BroadcastReceiver {
         }
 
         @Override
-        public void onUpdate(ScheduleItemData data, ScheduleItemManager.ScheduleItemUpdateType type) {
+        public void onUpdate(ScheduleItemData data, ScheduleItemManager.ScheduleItemUpdateType type, ScheduleItemManager manager) {
             Log.d("BackgroundManager", "Set New Alarm");
-            PIMAlarmService.startActionAddAlarm(context, 10000, "ASDF", 100);
-            Toast toast = Toast.makeText(context, "Ha Ha" + isMyServiceRunning(context, PIMAlarmService.class), Toast.LENGTH_LONG);
-            toast.show();
-        }
 
-        private boolean isMyServiceRunning(Context c, Class<?> serviceClass) {
-            ActivityManager manager = (ActivityManager) c.getSystemService(Context.ACTIVITY_SERVICE);
-            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-                if (serviceClass.getName().equals(service.service.getClassName())) {
-                    return true;
-                }
-            }
-            return false;
+            PIMAlarmService.startActionAddAlarm(context, 10000, "ASDF", 100);
         }
     }
 }

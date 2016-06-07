@@ -2,15 +2,11 @@ package com.example.view.main;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.data.SocialItemData;
-import com.example.managers.DataManager;
 import com.example.pim.R;
-
-import java.util.ArrayList;
 
 
 public class SocialItemAdapter extends TypedRecylcerAdapter<SocialItemAdapter.SocialItemHolder>{
@@ -29,14 +25,14 @@ public class SocialItemAdapter extends TypedRecylcerAdapter<SocialItemAdapter.So
 
     @Override
     public void onBindViewHolder(SocialItemHolder holder, int position) {
-        SocialItemData data = DataManager.Inst().getSocialDataList().get(position);
+        //SocialItemData data = DataManager.Inst().getSocialDataList().get(position);
 
-        holder.setName(data.name);
+        holder.setName("dummy");
     }
 
     @Override
     public int getItemCount() {
-        return DataManager.Inst().getSocialDataList().size();
+        return 0;
     }
 
     class SocialItemHolder extends RecyclerView.ViewHolder {
