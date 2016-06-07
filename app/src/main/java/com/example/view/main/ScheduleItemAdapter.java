@@ -13,6 +13,7 @@ import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
 import com.example.pim.R;
 
+import java.util.GregorianCalendar;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -99,10 +100,20 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         else
             holder.setDest("Destination not allocated");
 
+        // time
+        if(data[0].time != null) {
+            int day = data[0].time.get(GregorianCalendar.DAY_OF_MONTH);
+            int hour = data[0].time.get(GregorianCalendar.HOUR_OF_DAY);
+            int min = data[0].time.get(GregorianCalendar.MINUTE);
+            holder.setTime("시각 : " + day + "일 " + hour + "시" + min + "분");
+        } else {
+            holder.setTime("시각 미정");
+        }
+
         // delta time
         if(data[0].deltaTime != 0) {
             long min = TimeUnit.SECONDS.toMinutes(data[0].deltaTime);
-            holder.setTime("약 " + min + "분 소요");
+            holder.setDeltaTime("약 " + min + "분 소요");
         }
         else
             holder.setTime("시간 미정");
@@ -131,6 +142,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         private TextView name;
         private TextView dest;
         private TextView time;
+        private TextView deltatime;
         private TextView comment;
 
         /**
@@ -142,7 +154,8 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
 
             name = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Name);
             dest = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Destination);
-            time = (TextView)this.itemView.findViewById(R.id.Schedule_Item_DeltaTime);
+            time = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Time);
+            deltatime = (TextView)this.itemView.findViewById(R.id.Schedule_Item_DeltaTime);
             comment = (TextView)this.itemView.findViewById(R.id.Schedule_Item_Comment);
 
             View.OnClickListener click = new View.OnClickListener() {
@@ -172,6 +185,7 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         public void setTime(String time) {
             this.time.setText(time);
         }
+        public void setDeltaTime(String time) { this.deltatime.setText(time); }
         public void setComment(String comment) { this.comment.setText(comment);}
     }
 }

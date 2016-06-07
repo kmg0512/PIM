@@ -9,6 +9,8 @@ import android.widget.Toast;
 
 import com.example.data.ScheduleItemData;
 
+import java.util.Calendar;
+
 /**
  * Created by tigri on 2016-06-07.
  */
@@ -25,8 +27,6 @@ public class BackgroundManager extends BroadcastReceiver {
             public void doWith(ScheduleItemManager manager) {
                 int length = manager.getItemsize();
 
-                manager.addUpdateListener(new AlarmAdder((context)));
-
                 // update schedule item
                 for(int i = 0; i < length; ++i)
                 {
@@ -36,19 +36,5 @@ public class BackgroundManager extends BroadcastReceiver {
         });
     }
 
-    class AlarmAdder implements ScheduleItemManager.ScheduleItemUpdateCallBack {
 
-        Context context;
-
-        AlarmAdder(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        public void onUpdate(ScheduleItemData data, ScheduleItemManager.ScheduleItemUpdateType type, ScheduleItemManager manager) {
-            Log.d("BackgroundManager", "Set New Alarm");
-
-            PIMAlarmService.startActionAddAlarm(context, 10000, "ASDF", 100);
-        }
-    }
 }

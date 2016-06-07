@@ -46,6 +46,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -71,7 +72,12 @@ public class MainActivity extends AppCompatActivity
         // initialize google map api
         GoogleMapAPI.Init(this);
 
-        // add sample alarm
+        // start service
+        Intent alarmService = new Intent(this, PIMAlarmService.class);
+        startService(alarmService);
+
+
+        // add background updating routine
         AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, BackgroundManager.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -164,6 +170,7 @@ public class MainActivity extends AppCompatActivity
             data.name = "고급 시계 수리";
             data.loc_destination = new GoogleMapLocation("청담동", 37.5175829, 127.0416468, "ChIJgxsKDHWkfDUR1YdLXxblctM");
             data.comment = "";
+            data.time = new GregorianCalendar(2016, 5, 8, 11, 45);
 
             SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                 @Override
@@ -177,6 +184,7 @@ public class MainActivity extends AppCompatActivity
             data.name = "용던레이드";
             data.loc_destination = new GoogleMapLocation("용산역", 37.529626, 126.96347, "ChIJUcFjVAOifDUR0CAVWLo7ZOg");
             data.comment = "메모리 8G, SSD 256GB, 파워 700W";
+            data.time = new GregorianCalendar(2016, 5, 13, 12, 45);
 
             SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                 @Override
@@ -189,7 +197,8 @@ public class MainActivity extends AppCompatActivity
             final ScheduleItemData data = new ScheduleItemData();
             data.name = "종강파티";
             data.loc_destination = new GoogleMapLocation("안암역", 37.586296, 127.029137, "ChIJ35b3zLq8fDURvog9-eIQPBg");
-            data.comment = "아 곧 종강이다!!!";
+            data.comment = "아 종강이다!!!";
+            data.time = new GregorianCalendar(2016, 5, 24, 18, 00);
 
             SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                 @Override
@@ -256,10 +265,18 @@ public class MainActivity extends AppCompatActivity
                         case DialogInterface.BUTTON_POSITIVE:
                             final ScheduleItemData data = new ScheduleItemData();
                             data.name = editTextName.getText().toString();
-                            data.time = String.valueOf(calendar.get(Calendar.YEAR)) +  String.valueOf((calendar.get(Calendar.MONTH) + 1) * 1000000 + calendar.get(Calendar.DAY_OF_MONTH) * 10000 + calendar.get(Calendar.HOUR_OF_DAY) * 100 + calendar.get(Calendar.MINUTE));
-                            Log.d("Calendar", data.time);
                             data.loc_destination.setName(editTextDestination.getText().toString());
                             data.comment = editTextComment.getText().toString();
+
+                            GregorianCalendar gregorianCalendar = new GregorianCalendar(
+                                    calendar.get(Calendar.YEAR),
+                                    calendar.get(Calendar.MONTH),
+                                    calendar.get(Calendar.DAY_OF_MONTH),
+                                    calendar.get(Calendar.HOUR_OF_DAY),
+                                    calendar.get(Calendar.MINUTE)
+                            );
+
+                            data.time = gregorianCalendar;
 
                             SharedDataManager.Inst(MainActivity.this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                                 @Override
