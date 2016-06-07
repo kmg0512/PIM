@@ -2,6 +2,7 @@ package com.example.pim;
 
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +31,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.TimePicker;
 
 import com.example.data.ScheduleItemData;
@@ -60,14 +63,23 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        //DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        //ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        //        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        //drawer.setDrawerListener(toggle);
+       // toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CreateItemAddingPopUp();
+            }
+        });
+
 
         // initialize google map api
         GoogleMapAPI.Init(this);
@@ -83,7 +95,7 @@ public class MainActivity extends AppCompatActivity
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent alarmReceiver = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 3 * 1000, 180 * 1000, alarmReceiver);
-        
+
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -166,33 +178,21 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_gallery) {
 
         } else if (id == R.id.nav_slideshow) {
-            final ScheduleItemData data = new ScheduleItemData();
-            data.name = "고급 시계 수리";
-            data.loc_destination = new GoogleMapLocation("청담동", 37.5175829, 127.0416468, "ChIJgxsKDHWkfDUR1YdLXxblctM");
-            data.comment = "";
-            data.time = new GregorianCalendar(2016, 5, 8, 11, 45);
-
-            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
-                @Override
-                public void doWith(ScheduleItemManager scheduleItemManager) {
-                    scheduleItemManager.addItemData(data);
-                }
-            });
         } else if (id == R.id.nav_manage) {
-            // add dummy data
-            final ScheduleItemData data = new ScheduleItemData();
-            data.name = "용던레이드";
-            data.loc_destination = new GoogleMapLocation("용산역", 37.529626, 126.96347, "ChIJUcFjVAOifDUR0CAVWLo7ZOg");
-            data.comment = "메모리 8G, SSD 256GB, 파워 700W";
-            data.time = new GregorianCalendar(2016, 5, 13, 12, 45);
 
-            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
-                @Override
-                public void doWith(ScheduleItemManager scheduleItemManager) {
-                    scheduleItemManager.addItemData(data);
-                }
-            });
         } else if (id == R.id.nav_share) {
+
+        } else if (id == R.id.nav_send) {
+            CreateSampleItems();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    private void CreateSampleItems() {
+        {
             // add dummy data
             final ScheduleItemData data = new ScheduleItemData();
             data.name = "종강파티";
@@ -206,115 +206,131 @@ public class MainActivity extends AppCompatActivity
                     scheduleItemManager.addItemData(data);
                 }
             });
-        } else if (id == R.id.nav_send) {
-            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        }
 
-            dialog.setTitle("일정 추가");
+        {
+            // add dummy data
+            final ScheduleItemData data = new ScheduleItemData();
+            data.name = "용던레이드";
+            data.loc_destination = new GoogleMapLocation("용산역", 37.529626, 126.96347, "ChIJUcFjVAOifDUR0CAVWLo7ZOg");
+            data.comment = "메모리 8G, SSD 256GB, 파워 700W";
+            data.time = new GregorianCalendar(2016, 5, 13, 12, 45);
 
-            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
-            dialog.setView(linearLayout);
-
-            final EditText editTextName = (EditText) linearLayout.findViewById(R.id.editTextName);
-            final EditText editTextDestination = (EditText) linearLayout.findViewById(R.id.editText3);
-            final EditText editTextComment = (EditText) linearLayout.findViewById(R.id.editTextComment);
-
-            final Calendar calendar = Calendar.getInstance();
-            final Button buttonDate = (Button) linearLayout.findViewById(R.id.buttonDate);
-            buttonDate.setOnClickListener(new View.OnClickListener() {
+            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
                 @Override
-                public void onClick(View v) {
-                    int y = calendar.get(Calendar.YEAR);
-                    int m = calendar.get(Calendar.MONTH);
-                    int d = calendar.get(Calendar.DAY_OF_MONTH);
-
-                    DatePickerDialog dpd = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                            calendar.set(Calendar.YEAR, year);
-                            calendar.set(Calendar.MONTH, monthOfYear);
-                            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                            buttonDate.setText(String.valueOf(year) + "년 " + String.valueOf(monthOfYear+1) + "월 " + String.valueOf(dayOfMonth) + "일");
-                        }
-                    }, y, m, d);
-                    dpd.show();
+                public void doWith(ScheduleItemManager scheduleItemManager) {
+                    scheduleItemManager.addItemData(data);
                 }
             });
-            final Button buttonTime = (Button) linearLayout.findViewById(R.id.buttonTime);
-            buttonTime.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    int h = calendar.get(Calendar.HOUR_OF_DAY);
-                    int m = calendar.get(Calendar.MINUTE);
+        }
 
-                    TimePickerDialog tpd = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                            calendar.set(Calendar.MINUTE, minute);
-                            buttonTime.setText(String.valueOf(hourOfDay) + "시 " + String.valueOf(minute) + "분");
-                        }
-                    }, h, m, false);
-                    tpd.show();
+        {
+            final ScheduleItemData data = new ScheduleItemData();
+            data.name = "고급 시계 수리";
+            data.loc_destination = new GoogleMapLocation("청담동", 37.5175829, 127.0416468, "ChIJgxsKDHWkfDUR1YdLXxblctM");
+            data.comment = "";
+            data.time = new GregorianCalendar(2016, 5, 8, 11, 45);
+
+            SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                @Override
+                public void doWith(ScheduleItemManager scheduleItemManager) {
+                    scheduleItemManager.addItemData(data);
                 }
             });
+        }
+    }
 
-            DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    switch (which) {
-                        case DialogInterface.BUTTON_POSITIVE:
-                            final ScheduleItemData data = new ScheduleItemData();
-                            data.name = editTextName.getText().toString();
-                            data.loc_destination.setName(editTextDestination.getText().toString());
-                            data.comment = editTextComment.getText().toString();
+    private void CreateItemAddingPopUp() {
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
-                            GregorianCalendar gregorianCalendar = new GregorianCalendar(
-                                    calendar.get(Calendar.YEAR),
-                                    calendar.get(Calendar.MONTH),
-                                    calendar.get(Calendar.DAY_OF_MONTH),
-                                    calendar.get(Calendar.HOUR_OF_DAY),
-                                    calendar.get(Calendar.MINUTE)
-                            );
+        dialog.setTitle("일정 추가");
 
-                            data.time = gregorianCalendar;
+        final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
+        dialog.setView(linearLayout);
 
-                            SharedDataManager.Inst(MainActivity.this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
-                                @Override
-                                public void doWith(ScheduleItemManager scheduleItemManager) {
-                                    scheduleItemManager.addItemData(data);
-                                }
-                            });
-                            break;
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            break;
-                        case DialogInterface.BUTTON_NEUTRAL:
-                            break;
+        final EditText editTextName = (EditText) linearLayout.findViewById(R.id.editTextName);
+        final EditText editTextDestination = (EditText) linearLayout.findViewById(R.id.editText3);
+        final EditText editTextComment = (EditText) linearLayout.findViewById(R.id.editTextComment);
+
+        final Calendar calendar = Calendar.getInstance();
+        final Button buttonDate = (Button) linearLayout.findViewById(R.id.buttonDate);
+        buttonDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int y = calendar.get(Calendar.YEAR);
+                int m = calendar.get(Calendar.MONTH);
+                int d = calendar.get(Calendar.DAY_OF_MONTH);
+
+                DatePickerDialog dpd = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                        calendar.set(Calendar.YEAR, year);
+                        calendar.set(Calendar.MONTH, monthOfYear);
+                        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                        buttonDate.setText(String.valueOf(year) + "년 " + String.valueOf(monthOfYear+1) + "월 " + String.valueOf(dayOfMonth) + "일");
                     }
-                }
-            };
-
-            dialog.setPositiveButton("Yes", listener);
-            dialog.setNegativeButton("No", listener);
-            dialog.setNeutralButton("Cancel", listener);
-
-            dialog.show();
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
-
-    // http://stackoverflow.com/questions/600207/how-to-check-if-a-service-is-running-on-android
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
+                }, y, m, d);
+                dpd.show();
             }
-        }
-        return false;
+        });
+        final Button buttonTime = (Button) linearLayout.findViewById(R.id.buttonTime);
+        buttonTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int h = calendar.get(Calendar.HOUR_OF_DAY);
+                int m = calendar.get(Calendar.MINUTE);
+
+                TimePickerDialog tpd = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                        calendar.set(Calendar.MINUTE, minute);
+                        buttonTime.setText(String.valueOf(hourOfDay) + "시 " + String.valueOf(minute) + "분");
+                    }
+                }, h, m, false);
+                tpd.show();
+            }
+        });
+
+        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case DialogInterface.BUTTON_POSITIVE:
+                        final ScheduleItemData data = new ScheduleItemData();
+                        data.name = editTextName.getText().toString();
+                        data.loc_destination.setName(editTextDestination.getText().toString());
+                        data.comment = editTextComment.getText().toString();
+
+                        GregorianCalendar gregorianCalendar = new GregorianCalendar(
+                                calendar.get(Calendar.YEAR),
+                                calendar.get(Calendar.MONTH),
+                                calendar.get(Calendar.DAY_OF_MONTH),
+                                calendar.get(Calendar.HOUR_OF_DAY),
+                                calendar.get(Calendar.MINUTE)
+                        );
+
+                        data.time = gregorianCalendar;
+
+                        SharedDataManager.Inst(MainActivity.this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
+                            @Override
+                            public void doWith(ScheduleItemManager scheduleItemManager) {
+                                scheduleItemManager.addItemData(data);
+                            }
+                        });
+                        break;
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                    case DialogInterface.BUTTON_NEUTRAL:
+                        break;
+                }
+            }
+        };
+
+        dialog.setPositiveButton("Yes", listener);
+        dialog.setNegativeButton("No", listener);
+        dialog.setNeutralButton("Cancel", listener);
+
+        dialog.show();
     }
-
-
 }
