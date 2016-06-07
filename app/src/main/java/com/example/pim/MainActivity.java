@@ -1,5 +1,7 @@
 package com.example.pim;
 
+import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -16,8 +18,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TimePicker;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.DataManager;
@@ -27,6 +32,8 @@ import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -154,31 +161,69 @@ public class MainActivity extends AppCompatActivity
             data.loc_destination = new GoogleMapLocation("서울역", 37.554531, 126.970663, "ChIJM5xLpGaifDURb1sjwxADM-8");
             DataManager.Inst().getScheduleDataManager().addItemData(data);
         } else if (id == R.id.nav_send) {
-            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
             dialog.setTitle("일정 추가");
 
             final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
             dialog.setView(linearLayout);
 
+            final EditText editTextName = (EditText) linearLayout.findViewById(R.id.editTextName);
+            final EditText editTextDestination = (EditText) linearLayout.findViewById(R.id.editText3);
+            final EditText editTextComment = (EditText) linearLayout.findViewById(R.id.editTextComment);
+
+            final Calendar calendar = Calendar.getInstance();
+            final Button buttonDate = (Button) linearLayout.findViewById(R.id.buttonDate);
+            buttonDate.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int y = calendar.get(Calendar.YEAR);
+                    int m = calendar.get(Calendar.MONTH);
+                    int d = calendar.get(Calendar.DAY_OF_MONTH);
+
+                    DatePickerDialog dpd = new DatePickerDialog(MainActivity.this, new DatePickerDialog.OnDateSetListener() {
+                        @Override
+                        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                            calendar.set(Calendar.YEAR, year);
+                            calendar.set(Calendar.MONTH, monthOfYear);
+                            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                            buttonDate.setText(String.valueOf(year) + "년 " + String.valueOf(monthOfYear+1) + "월 " + String.valueOf(dayOfMonth) + "일");
+                        }
+                    }, y, m, d);
+                    dpd.show();
+                }
+            });
+            final Button buttonTime = (Button) linearLayout.findViewById(R.id.buttonTime);
+            buttonTime.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int h = calendar.get(Calendar.HOUR_OF_DAY);
+                    int m = calendar.get(Calendar.MINUTE);
+
+                    TimePickerDialog tpd = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            calendar.set(Calendar.MINUTE, minute);
+                            buttonTime.setText(String.valueOf(hourOfDay) + "시 " + String.valueOf(minute) + "분");
+                        }
+                    }, h, m, false);
+                    tpd.show();
+                }
+            });
+
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     switch (which) {
                         case DialogInterface.BUTTON_POSITIVE:
-                            EditText editText1 = (EditText) linearLayout.findViewById(R.id.editText1);
-                            EditText editText2 = (EditText) linearLayout.findViewById(R.id.editText2);
-                            EditText editText3 = (EditText) linearLayout.findViewById(R.id.editText3);
-                            EditText editText4 = (EditText) linearLayout.findViewById(R.id.editText4);
-
                             ScheduleItemData data = new ScheduleItemData();
-                            data.name = editText1.getText().toString();
-                            data.time = editText2.getText().toString();
-                            data.loc_destination.setName(editText3.getText().toString());
-                            data.comment = editText4.getText().toString();
-
+                            data.name = editTextName.getText().toString();
+                            data.time = String.valueOf(calendar.get(Calendar.YEAR)) +  String.valueOf((calendar.get(Calendar.MONTH) + 1) * 1000000 + calendar.get(Calendar.DAY_OF_MONTH) * 10000 + calendar.get(Calendar.HOUR_OF_DAY) * 100 + calendar.get(Calendar.MINUTE));
+                            Log.d("Calendar", data.time);
+                            data.loc_destination.setName(editTextDestination.getText().toString());
+                            data.comment = editTextComment.getText().toString();
                             DataManager.Inst().getScheduleDataManager().addItemData(data);
-
                             break;
                         case DialogInterface.BUTTON_NEGATIVE:
                             break;
