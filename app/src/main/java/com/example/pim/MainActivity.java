@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,15 +22,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.BackgroundManager;
@@ -40,18 +45,29 @@ import com.example.managers.SharedDataManager;
 import com.example.managers.TempAlarmReceiver;
 import com.example.utility.map.GoogleMapAPI;
 import com.example.utility.map.GoogleMapLocation;
+import com.example.view.main.PlaceAutocompleteAdapter;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
     ScheduleItemAdapter scheduleItemAdapter;
+    PlaceAutocompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +87,11 @@ public class MainActivity extends AppCompatActivity
 
         // initialize google map api
         GoogleMapAPI.Init(this);
+        googleClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, 0 /* clientId */, this)
+                .addApi(Places.GEO_DATA_API)
+                .build();
+
 
         // start service
         Intent alarmService = new Intent(this, PIMAlarmService.class);
@@ -215,7 +236,6 @@ public class MainActivity extends AppCompatActivity
             dialog.setView(linearLayout);
 
             final EditText editTextName = (EditText) linearLayout.findViewById(R.id.editTextName);
-            final EditText editTextDestination = (EditText) linearLayout.findViewById(R.id.editText3);
             final EditText editTextComment = (EditText) linearLayout.findViewById(R.id.editTextComment);
 
             final Calendar calendar = Calendar.getInstance();
@@ -258,6 +278,43 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
+            final AutoCompleteTextView autoCompleteTextViewDestination = (AutoCompleteTextView) linearLayout.findViewById(R.id.autoCompleteTextViewDestination);
+            autoCompleteTextViewDestination.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    AutocompletePrediction item = placeAutocompleteAdapter.getItem(position);
+                    String placeId = item.getPlaceId();
+                    CharSequence primaryText = item.getPrimaryText(null);
+
+                    Log.i("AutoCompleteTextView", "Autocomplete item selected: " + primaryText);
+
+                    PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+                            .getPlaceById(googleClient, placeId);
+                    placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                        @Override
+                        public void onResult(@NonNull PlaceBuffer places) {
+                            if (!places.getStatus().isSuccess()) {
+                                // Request did not complete successfully
+                                Log.e("AutoCompleteTextView", "Place query did not complete. Error: " + places.getStatus().toString());
+                                places.release();
+                                return;
+                            }
+                            // Get the Place object from the buffer.
+                            final Place place = places.get(0);
+
+                            // TODO: Place to GoogleMapLocation
+                            places.release();
+                        }
+                    });
+
+                    Toast.makeText(getApplicationContext(), "Clicked: " + primaryText, Toast.LENGTH_SHORT).show();
+                    Log.i("AutoCompleteTextView", "Called getPlaceById to get Place details for " + placeId);
+                }
+            });
+            LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
+            placeAutocompleteAdapter = new PlaceAutocompleteAdapter(MainActivity.this, googleClient, BOUNDS_GREATER_SYDNEY, null);
+            autoCompleteTextViewDestination.setAdapter(placeAutocompleteAdapter);
+
             DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -265,7 +322,7 @@ public class MainActivity extends AppCompatActivity
                         case DialogInterface.BUTTON_POSITIVE:
                             final ScheduleItemData data = new ScheduleItemData();
                             data.name = editTextName.getText().toString();
-                            data.loc_destination.setName(editTextDestination.getText().toString());
+                            //data.loc_destination.setName(editTextDestination.getText().toString());
                             data.comment = editTextComment.getText().toString();
 
                             GregorianCalendar gregorianCalendar = new GregorianCalendar(
@@ -317,4 +374,8 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }
