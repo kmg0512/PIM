@@ -187,5 +187,6 @@ public class ScheduleItemAdapter extends TypedRecylcerAdapter<ScheduleItemAdapte
         }
         public void setDeltaTime(String time) { this.deltatime.setText(time); }
         public void setComment(String comment) { this.comment.setText(comment);}
+
     }
 }

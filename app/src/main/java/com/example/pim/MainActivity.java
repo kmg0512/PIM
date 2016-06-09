@@ -62,6 +62,15 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
+
+import io.fabric.sdk.android.Fabric;
 import org.json.JSONObject;
 
 import java.util.Calendar;
@@ -70,10 +79,21 @@ import java.util.GregorianCalendar;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "pim_manager";
+    private static final String TWITTER_SECRET = "catdog09321";
+
+
     ScheduleItemAdapter scheduleItemAdapter;
     PlaceAutocompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
+
+    // callback manager of facebook
     CallbackManager callbackManager;
+
+    // button of twitter
+    TwitterLoginButton twitterLoginButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,15 +117,17 @@ public class MainActivity extends AppCompatActivity
                 .addApi(Places.GEO_DATA_API)
                 .build();
 
-
         // initialize Facebook sdk
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
 
+        // initialize Twitter kit
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric.with(this, new Twitter(authConfig));
+
         // start service
         Intent alarmService = new Intent(this, PIMAlarmService.class);
         startService(alarmService);
-
 
         // add background updating routine
         AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
@@ -113,7 +135,6 @@ public class MainActivity extends AppCompatActivity
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent alarmReceiver = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 3 * 1000, 180 * 1000, alarmReceiver);
-        
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -368,7 +389,7 @@ public class MainActivity extends AppCompatActivity
             final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             dialog.setTitle("Facebook 계정 관리");
 
-            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_sns, null);
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_facebook, null);
             dialog.setView(relativeLayout);
             Log.d("Facebook", "set layout");
 
@@ -404,7 +425,36 @@ public class MainActivity extends AppCompatActivity
             });
             dialog.show();
         } else if (id == R.id.nav_twitter) {
+            Log.d("Twitter", "Start");
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Twitter 계정 관리");
+            Log.d("Twitter", "setTitle");
 
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_twitter, null);
+            dialog.setView(relativeLayout);
+            Log.d("Twitter", "setView");
+
+            twitterLoginButton = (TwitterLoginButton) relativeLayout.findViewById(R.id.buttonTwitter);
+            twitterLoginButton.setCallback(new Callback<TwitterSession>() {
+                @Override
+                public void success(Result<TwitterSession> result) {
+                    // The TwitterSession is also available through:
+                    // Twitter.getInstance().core.getSessionManager().getActiveSession()
+                    TwitterSession session = result.data;
+                    // TODO: Remove toast and use the TwitterSession's userID
+                    // with your app's user model
+                    String msg = "@" + session.getUserName() + " logged in! (#" + session.getUserId() + ")";
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                }
+                @Override
+                public void failure(TwitterException exception) {
+                    Log.d("TwitterKit", "Login with Twitter failure", exception);
+                }
+            });
+
+
+
+            dialog.show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -424,9 +474,17 @@ public class MainActivity extends AppCompatActivity
         return false;
     }
 
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // Make sure that the loginButton hears the result from any
+        // Activity that it triggered.
+        twitterLoginButton.onActivityResult(requestCode, resultCode, data);
+    }
+
 }
