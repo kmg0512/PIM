@@ -3,14 +3,12 @@ package com.example.pim;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,7 +20,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,33 +29,40 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.BackgroundManager;
-import com.example.managers.MyIntentService;
 import com.example.managers.PIMAlarmService;
 import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
-import com.example.managers.TempAlarmReceiver;
 import com.example.utility.map.GoogleMapAPI;
 import com.example.utility.map.GoogleMapLocation;
 import com.example.view.main.PlaceAutocompleteAdapter;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -69,6 +73,7 @@ public class MainActivity extends AppCompatActivity
     ScheduleItemAdapter scheduleItemAdapter;
     PlaceAutocompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
+    CallbackManager callbackManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,6 +97,10 @@ public class MainActivity extends AppCompatActivity
                 .addApi(Places.GEO_DATA_API)
                 .build();
 
+
+        // initialize Facebook sdk
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
 
         // start service
         Intent alarmService = new Intent(this, PIMAlarmService.class);
@@ -177,7 +186,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        Log.d("MainActivity", "enabled add schedule dialog");
+        Log.d("MainActivity", "enabled add schedule dialog_schedule");
 
         // Handle navigation view item clicks here.
         int id = item.getItemId();
@@ -232,14 +241,14 @@ public class MainActivity extends AppCompatActivity
 
             dialog.setTitle("일정 추가");
 
-            final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
-            dialog.setView(linearLayout);
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_schedule, null);
+            dialog.setView(relativeLayout);
 
-            final EditText editTextName = (EditText) linearLayout.findViewById(R.id.editTextName);
-            final EditText editTextComment = (EditText) linearLayout.findViewById(R.id.editTextComment);
+            final EditText editTextName = (EditText) relativeLayout.findViewById(R.id.editTextName);
+            final EditText editTextComment = (EditText) relativeLayout.findViewById(R.id.editTextComment);
 
             final Calendar calendar = Calendar.getInstance();
-            final Button buttonDate = (Button) linearLayout.findViewById(R.id.buttonDate);
+            final Button buttonDate = (Button) relativeLayout.findViewById(R.id.buttonDate);
             buttonDate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -259,7 +268,7 @@ public class MainActivity extends AppCompatActivity
                     dpd.show();
                 }
             });
-            final Button buttonTime = (Button) linearLayout.findViewById(R.id.buttonTime);
+            final Button buttonTime = (Button) relativeLayout.findViewById(R.id.buttonTime);
             buttonTime.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -278,7 +287,7 @@ public class MainActivity extends AppCompatActivity
                 }
             });
 
-            final AutoCompleteTextView autoCompleteTextViewDestination = (AutoCompleteTextView) linearLayout.findViewById(R.id.autoCompleteTextViewDestination);
+            final AutoCompleteTextView autoCompleteTextViewDestination = (AutoCompleteTextView) relativeLayout.findViewById(R.id.autoCompleteTextViewDestination);
             autoCompleteTextViewDestination.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -355,10 +364,52 @@ public class MainActivity extends AppCompatActivity
             dialog.setNeutralButton("Cancel", listener);
 
             dialog.show();
+        } else if (id == R.id.nav_facebook) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Facebook 계정 관리");
+
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_sns, null);
+            dialog.setView(relativeLayout);
+            Log.d("Facebook", "set layout");
+
+            LoginButton loginButton = (LoginButton) relativeLayout.findViewById(R.id.buttonFacebook);
+            Log.d("Facebook", "connect button");
+            loginButton.setReadPermissions("public_profile", "user_friends","email");
+            Log.d("Facebook", "set permission");
+            loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    Log.e("Facebook","Token" + loginResult.getAccessToken().getToken());
+                    Log.e("Facebook","User ID" + loginResult.getAccessToken().getUserId());
+                    Log.e("Facebook","Permission List" + loginResult.getAccessToken().getPermissions() + "");
+
+                    GraphRequest request =GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                                @Override
+                                public void onCompleted(JSONObject object, GraphResponse response) {
+                                    try {
+                                        Log.e("Facebook", "User profile" + object.toString());
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                    request.executeAsync();
+                }
+
+                @Override
+                public void onError(FacebookException error) { }
+
+                @Override
+                public void onCancel() { }
+            });
+            dialog.show();
+        } else if (id == R.id.nav_twitter) {
+
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 

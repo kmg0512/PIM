@@ -1,88 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical">
     <LinearLayout
+        android:id="@+id/linear1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginLeft="5dp">
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_alignParentTop="true">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="일정명"
             android:layout_gravity="center"
-            android:layout_weight="1"/>
+            android:paddingRight="10dp"/>
         <EditText
             android:id="@+id/editTextName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="4"/>
     </LinearLayout>
+    <Space android:id="@+id/space1" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/linear1" />
     <LinearLayout
+        android:id="@+id/linear2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginLeft="5dp">
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_below="@id/space1">
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="시간"
+            android:text="시간  "
             android:layout_gravity="center"
-            android:layout_weight="4" />
+            android:paddingEnd="10dp"/>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_weight="1">
+            android:orientation="horizontal">
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Date"
                 android:id="@+id/buttonDate"
-                android:layout_weight="2"/>
+                android:layout_weight="1"/>
 
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Clock"
                 android:id="@+id/buttonTime"
-                android:layout_weight="2"/>
+                android:layout_weight="1"/>
         </LinearLayout>
     </LinearLayout>
+    <Space android:id="@+id/space2" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/linear2" />
     <LinearLayout
+        android:id="@+id/linear3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginLeft="5dp">
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_below="@id/space2">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="장소"
+            android:text="장소  "
             android:layout_gravity="center"
-            android:layout_weight="1"/>
+            android:paddingEnd="10dp"/>
         <AutoCompleteTextView
             android:id="@+id/autoCompleteTextViewDestination"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"/>
+            android:layout_height="wrap_content"/>
     </LinearLayout>
+    <Space android:id="@+id/space3" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/linear3" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginLeft="5dp">
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_below="@id/space3">
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="메모"
+            android:text="메모  "
             android:layout_gravity="center"
-            android:layout_weight="1"/>
+            android:paddingEnd="10dp"/>
         <EditText
             android:id="@+id/editTextComment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="4"/>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
-
-</LinearLayout>
+</RelativeLayout>
