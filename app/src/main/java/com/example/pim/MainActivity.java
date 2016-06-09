@@ -51,7 +51,7 @@ import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
 import com.example.utility.map.GoogleMapAPI;
 import com.example.utility.map.GoogleMapLocation;
-import com.example.view.main.PlaceAutoCompleteAdapter;
+import com.example.view.main.PlaceAutocompleteAdapter;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
 import com.facebook.CallbackManager;
@@ -77,9 +77,12 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
+import com.twitter.sdk.android.tweetcomposer.TweetComposer;
+import com.twitter.sdk.android.tweetui.TweetUi;
 
 import io.fabric.sdk.android.Fabric;
 import org.json.JSONObject;
@@ -91,19 +94,23 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
     // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
-    private static final String TWITTER_KEY = "pim_manager";
-    private static final String TWITTER_SECRET = "catdog09321";
+    private static final String TWITTER_KEY = "JTeV0vgTTJ2FnMOixwnyCoKOg";
+    private static final String TWITTER_SECRET = "QqcTDyG9d1BF8bWfcwbqdgCQH5qv1euCRHs02RMulBh2oyIpj8";
 
 
     ScheduleItemAdapter scheduleItemAdapter;
-    PlaceAutoCompleteAdapter placeAutocompleteAdapter;
+    PlaceAutocompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
 
     // callback manager of facebook
     CallbackManager callbackManager;
 
-    // button of twitter
+    // Twitter
     TwitterLoginButton twitterLoginButton;
+    TwitterCore core;
+    TweetUi tweetUi;
+    TweetComposer composer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -141,6 +148,9 @@ public class MainActivity extends AppCompatActivity
         // initialize Twitter kit
         TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
         Fabric.with(this, new Twitter(authConfig));
+        core = Twitter.getInstance().core;
+        tweetUi = Twitter.getInstance().tweetUi;
+        composer = Twitter.getInstance().tweetComposer;
 
         // start service
         Intent alarmService = new Intent(this, PIMAlarmService.class);
@@ -309,7 +319,7 @@ public class MainActivity extends AppCompatActivity
                     // TODO: Remove toast and use the TwitterSession's userID
                     // with your app's user model
                     String msg = "@" + session.getUserName() + " logged in! (#" + session.getUserId() + ")";
-                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                    Log.d("Twitter", msg);
                 }
 
                 @Override
@@ -467,7 +477,7 @@ public class MainActivity extends AppCompatActivity
             }
         });
         LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
-        placeAutocompleteAdapter = new PlaceAutoCompleteAdapter(MainActivity.this, googleClient, BOUNDS_GREATER_SYDNEY, null);
+        placeAutocompleteAdapter = new PlaceAutocompleteAdapter(MainActivity.this, googleClient, BOUNDS_GREATER_SYDNEY, null);
         autoCompleteTextViewDestination.setAdapter(placeAutocompleteAdapter);
 
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
@@ -520,10 +530,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("Twitter", "onActivityResult");
         super.onActivityResult(requestCode, resultCode, data);
         // Make sure that the loginButton hears the result from any
         // Activity that it triggered.
-        twitterLoginButton.onActivityResult(requestCode, resultCode, data);
+        // twitterLoginButton.onActivityResult(requestCode, resultCode, data);
     }
 
 }
