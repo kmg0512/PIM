@@ -11,6 +11,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <meta-data  android:name="com.google.android.geo.API_KEY"   android:value="AIzaSyAM9tioD2rCRF5bL9QGdPv1kNlAG3_EFO4"/>
+        <meta-data  android:name="com.facebook.sdk.ApplicationId"   android:value="@string/facebook_app_id"/>
+        <meta-data  android:name="io.fabric.ApiKey"                 android:value="475bb41686cb83dc8ac7ad45e27a8b6d4fdbc41d" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

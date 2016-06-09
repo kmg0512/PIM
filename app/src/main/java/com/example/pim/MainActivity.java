@@ -4,15 +4,18 @@ import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+
 import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
+
+import android.support.annotation.NonNull;
+
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,35 +30,81 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+
 import android.widget.LinearLayout;
 import android.widget.SearchView;
+
+import android.widget.RelativeLayout;
+
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.example.data.ScheduleItemData;
 import com.example.managers.BackgroundManager;
-import com.example.managers.MyIntentService;
 import com.example.managers.PIMAlarmService;
 import com.example.managers.ScheduleItemManager;
 import com.example.managers.SharedDataManager;
-import com.example.managers.TempAlarmReceiver;
 import com.example.utility.map.GoogleMapAPI;
 import com.example.utility.map.GoogleMapLocation;
+import com.example.view.main.PlaceAutoCompleteAdapter;
 import com.example.view.main.ScheduleItemAdapter;
 import com.example.view.main.SocialItemAdapter;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginResult;
+import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+
+import com.twitter.sdk.android.Twitter;
+import com.twitter.sdk.android.core.Callback;
+import com.twitter.sdk.android.core.Result;
+import com.twitter.sdk.android.core.TwitterAuthConfig;
+import com.twitter.sdk.android.core.TwitterException;
+import com.twitter.sdk.android.core.TwitterSession;
+import com.twitter.sdk.android.core.identity.TwitterLoginButton;
+
+import io.fabric.sdk.android.Fabric;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+
+    // Note: Your consumer key and secret should be obfuscated in your source code before shipping.
+    private static final String TWITTER_KEY = "pim_manager";
+    private static final String TWITTER_SECRET = "catdog09321";
+
 
     ScheduleItemAdapter scheduleItemAdapter;
+    PlaceAutoCompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
+
+    // callback manager of facebook
+    CallbackManager callbackManager;
+
+    // button of twitter
+    TwitterLoginButton twitterLoginButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,18 +121,30 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CreateItemAddingPopUp();
-            }
-        });
+        //FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
+        //fab.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View v) {
+        //        CreateItemAddingPopUp();
+        //    }
+        //});
+        // initialize google map api
+        googleClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, 0 /* clientId */, this)
+                .addApi(Places.GEO_DATA_API)
+                .build();
+
+        // initialize Facebook sdk
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
+
+        // initialize Twitter kit
+        TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
+        Fabric.with(this, new Twitter(authConfig));
 
         // start service
         Intent alarmService = new Intent(this, PIMAlarmService.class);
         startService(alarmService);
-
 
         // add background updating routine
         AlarmManager alarmManager = (AlarmManager)this.getSystemService(Context.ALARM_SERVICE);
@@ -91,7 +152,6 @@ public class MainActivity extends AppCompatActivity
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent alarmReceiver = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 3 * 1000, 180 * 1000, alarmReceiver);
-
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -170,7 +230,7 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        Log.d("MainActivity", "enabled add schedule dialog");
+        Log.d("MainActivity", "enabled add schedule dialog_schedule");
 
         // Handle navigation view item clicks here.
         int id = item.getItemId();
@@ -183,17 +243,92 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_manage) {
 
         } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
             CreateSampleItems();
+        } else if (id == R.id.nav_send) {
+            CreateItemAddingPopUp();
+        } else if (id == R.id.nav_facebook) {
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Facebook 계정 관리");
+
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_facebook, null);
+            dialog.setView(relativeLayout);
+            Log.d("Facebook", "set layout");
+
+            LoginButton loginButton = (LoginButton) relativeLayout.findViewById(R.id.buttonFacebook);
+            Log.d("Facebook", "connect button");
+            loginButton.setReadPermissions("public_profile", "user_friends", "email");
+            Log.d("Facebook", "set permission");
+            loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    Log.e("Facebook", "Token" + loginResult.getAccessToken().getToken());
+                    Log.e("Facebook", "User ID" + loginResult.getAccessToken().getUserId());
+                    Log.e("Facebook", "Permission List" + loginResult.getAccessToken().getPermissions() + "");
+
+                    GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                        @Override
+                        public void onCompleted(JSONObject object, GraphResponse response) {
+                            try {
+                                Log.e("Facebook", "User profile" + object.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    request.executeAsync();
+                }
+
+                @Override
+                public void onError(FacebookException error) {
+                }
+
+                @Override
+                public void onCancel() {
+                }
+            });
+
+            dialog.show();
+
+        } else if (id == R.id.nav_twitter) {
+            Log.d("Twitter", "Start");
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Twitter 계정 관리");
+            Log.d("Twitter", "setTitle");
+
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_twitter, null);
+            dialog.setView(relativeLayout);
+            Log.d("Twitter", "setView");
+
+            twitterLoginButton = (TwitterLoginButton) relativeLayout.findViewById(R.id.buttonTwitter);
+            twitterLoginButton.setCallback(new Callback<TwitterSession>() {
+                @Override
+                public void success(Result<TwitterSession> result) {
+                    // The TwitterSession is also available through:
+                    // Twitter.getInstance().core.getSessionManager().getActiveSession()
+                    TwitterSession session = result.data;
+                    // TODO: Remove toast and use the TwitterSession's userID
+                    // with your app's user model
+                    String msg = "@" + session.getUserName() + " logged in! (#" + session.getUserId() + ")";
+                    Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void failure(TwitterException exception) {
+                    Log.d("TwitterKit", "Login with Twitter failure", exception);
+                }
+            });
+
+            dialog.show();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+
         return true;
     }
 
-    private void CreateSampleItems() {
+    private void CreateSampleItems()
+    {
         {
             // add dummy data
             final ScheduleItemData data = new ScheduleItemData();
@@ -242,20 +377,22 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     private void CreateItemAddingPopUp() {
+        final ScheduleItemData data = new ScheduleItemData();
+
         final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
 
         dialog.setTitle("일정 추가");
 
-        final LinearLayout linearLayout = (LinearLayout)View.inflate(this, R.layout.dialog, null);
-        dialog.setView(linearLayout);
+        final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_schedule, null);
+        dialog.setView(relativeLayout);
 
-        final EditText editTextName = (EditText) linearLayout.findViewById(R.id.editTextName);
-        final EditText editTextDestination = (EditText) linearLayout.findViewById(R.id.editText3);
-        final EditText editTextComment = (EditText) linearLayout.findViewById(R.id.editTextComment);
+        final EditText editTextName = (EditText) relativeLayout.findViewById(R.id.editTextName);
+        final EditText editTextComment = (EditText) relativeLayout.findViewById(R.id.editTextComment);
 
         final Calendar calendar = Calendar.getInstance();
-        final Button buttonDate = (Button) linearLayout.findViewById(R.id.buttonDate);
+        final Button buttonDate = (Button) relativeLayout.findViewById(R.id.buttonDate);
         buttonDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -269,13 +406,13 @@ public class MainActivity extends AppCompatActivity
                         calendar.set(Calendar.YEAR, year);
                         calendar.set(Calendar.MONTH, monthOfYear);
                         calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-                        buttonDate.setText(String.valueOf(year) + "년 " + String.valueOf(monthOfYear+1) + "월 " + String.valueOf(dayOfMonth) + "일");
+                        buttonDate.setText(String.valueOf(year) + "년 " + String.valueOf(monthOfYear + 1) + "월 " + String.valueOf(dayOfMonth) + "일");
                     }
                 }, y, m, d);
                 dpd.show();
             }
         });
-        final Button buttonTime = (Button) linearLayout.findViewById(R.id.buttonTime);
+        final Button buttonTime = (Button) relativeLayout.findViewById(R.id.buttonTime);
         buttonTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -294,14 +431,52 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        final AutoCompleteTextView autoCompleteTextViewDestination = (AutoCompleteTextView) relativeLayout.findViewById(R.id.autoCompleteTextViewDestination);
+        autoCompleteTextViewDestination.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                AutocompletePrediction item = placeAutocompleteAdapter.getItem(position);
+                final String placeId = item.getPlaceId();
+                CharSequence primaryText = item.getPrimaryText(null);
+
+                Log.i("AutoCompleteTextView", "Autocomplete item selected: " + primaryText);
+
+                PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+                        .getPlaceById(googleClient, placeId);
+                placeResult.setResultCallback(new ResultCallback<PlaceBuffer>() {
+                    @Override
+                    public void onResult(@NonNull PlaceBuffer places) {
+                        if (!places.getStatus().isSuccess()) {
+                            // Request did not complete successfully
+                            Log.e("AutoCompleteTextView", "Place query did not complete. Error: " + places.getStatus().toString());
+                            places.release();
+                            return;
+                        }
+                        // Get the Place object from the buffer.
+                        final Place place = places.get(0);
+
+                        // TODO: Place to GoogleMapLocation
+                        data.loc_destination = new GoogleMapLocation(place.getName().toString(), place.getLatLng().latitude, place.getLatLng().longitude, place.getId());
+
+                        places.release();
+                    }
+                });
+
+                Toast.makeText(getApplicationContext(), "Clicked: " + primaryText, Toast.LENGTH_SHORT).show();
+                Log.i("AutoCompleteTextView", "Called getPlaceById to get Place details for " + placeId);
+            }
+        });
+        LatLngBounds BOUNDS_GREATER_SYDNEY = new LatLngBounds(new LatLng(-34.041458, 150.790100), new LatLng(-33.682247, 151.383362));
+        placeAutocompleteAdapter = new PlaceAutoCompleteAdapter(MainActivity.this, googleClient, BOUNDS_GREATER_SYDNEY, null);
+        autoCompleteTextViewDestination.setAdapter(placeAutocompleteAdapter);
+
         DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
-                        final ScheduleItemData data = new ScheduleItemData();
                         data.name = editTextName.getText().toString();
-                        data.loc_destination.setName(editTextDestination.getText().toString());
+                        //data.loc_destination.setName(editTextDestination.getText().toString());
                         data.comment = editTextComment.getText().toString();
 
                         GregorianCalendar gregorianCalendar = new GregorianCalendar(
@@ -335,4 +510,20 @@ public class MainActivity extends AppCompatActivity
 
         dialog.show();
     }
+
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        // Make sure that the loginButton hears the result from any
+        // Activity that it triggered.
+        twitterLoginButton.onActivityResult(requestCode, resultCode, data);
+    }
+
 }
