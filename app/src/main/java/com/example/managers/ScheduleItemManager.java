@@ -78,6 +78,9 @@ public class ScheduleItemManager implements JSONAble {
         GoogleMapAPI.GoogleMapAPICallBack<GoogleMapLocation> getcurrent = new GoogleMapAPI.GoogleMapAPICallBack<GoogleMapLocation>() {
             @Override
             public void OnGet(GoogleMapLocation parameters) {
+                if(parameters == null)
+                    return;
+
                 data.loc_origin = parameters;
                 GoogleMapAPI.GoogleMapAPICallBack<Long> getdeltatime = new GoogleMapAPI.GoogleMapAPICallBack<Long>() {
                     @Override
@@ -96,10 +99,10 @@ public class ScheduleItemManager implements JSONAble {
                     return;
                 }
 
-                GoogleMapAPI.Inst().getDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
+                GoogleMapAPI.Inst(SharedDataManager.getContext()).getDeltatTimeOf(data.loc_origin, data.loc_destination, getdeltatime);
             }
         };
-        GoogleMapAPI.Inst().getCurrentLocation(getcurrent);
+        GoogleMapAPI.Inst(SharedDataManager.getContext()).getCurrentLocation(getcurrent);
     }
 
     // listeners

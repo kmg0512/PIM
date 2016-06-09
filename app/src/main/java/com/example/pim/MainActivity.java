@@ -80,10 +80,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-
-        // initialize google map api
-        GoogleMapAPI.Init(this);
-
         // start service
         Intent alarmService = new Intent(this, PIMAlarmService.class);
         startService(alarmService);
@@ -113,6 +109,12 @@ public class MainActivity extends AppCompatActivity
         socialRecyclerView.setAdapter(new SocialItemAdapter(1));
 
         // log
+        SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
+            @Override
+            public void doWith(ScheduleItemManager manager) {
+
+            }
+        });
         Log.d("MainActivity", "onCreate");
     }
 

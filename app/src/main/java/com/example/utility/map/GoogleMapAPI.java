@@ -34,14 +34,14 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
     private static GoogleMapAPI inst;
     private static GoogleApiClient client;
 
-    public static GoogleMapAPI Inst() {
+    public static GoogleMapAPI Inst(Context context) {
         if(inst == null || client == null || (!client.isConnected()))
-            return null;
+            Init(context);
 
         return inst;
     }
 
-    public static void Init(Context context) {
+    private static void Init(Context context) {
         Log.d("GoogleMapAPI", "Initializing");
         inst = new GoogleMapAPI();
         if(client != null)
@@ -56,7 +56,7 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
     }
 
     public static void Destroy() {
-        if(client.isConnected())
+        if(client != null && client.isConnected())
             client.disconnect();
 
         client = null;
@@ -98,8 +98,10 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
         HttpsGetter.HttpsGetListener getListener = new HttpsGetter.HttpsGetListener() {
             @Override
             public void OnGet(HttpsGetter.HttpsGetResult result) {
-                if(!result.success)
+                if(!result.success) {
                     callback.OnGet(null);
+                    return;
+                }
 
                 // parse json
                 try {
@@ -244,10 +246,12 @@ public class GoogleMapAPI implements GoogleApiClient.ConnectionCallbacks, Google
                 // check ok
                 if(!result.success) {
                     callback.OnGet(null);
+                    return;
                 }
 
                 // parse json
                 try {
+                    Log.d("GoogleMapAPI", "" + result.success);
                     JSONObject root = new JSONObject(result.result);
 
                     // check ok

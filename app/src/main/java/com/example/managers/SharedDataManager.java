@@ -11,9 +11,18 @@ public class SharedDataManager {
     public static SharedDataManager Inst(Context context) {
         if(inst == null)
             inst = new SharedDataManager(context);
+        if(inst.context == null)
+            inst.context = context;
+
         return inst;
     }
 
+    public static Context getContext(){
+        if(inst == null)
+            return null;
+
+        return inst.context;
+    }
     private static SharedDataManager inst;
 
 
@@ -23,6 +32,7 @@ public class SharedDataManager {
 
     private Context context;
 
+    private final Object scheduleLock = new Object();
     private ScheduleItemManager scheduleItemManager;
 
     private GoogleApiClient googleApiClient;
@@ -36,19 +46,24 @@ public class SharedDataManager {
     }
 
 
-    public synchronized void giveScheduleTask(Task<ScheduleItemManager> task) {
-        if(scheduleItemManager == null)
-            scheduleItemManager = ScheduleItemManager.Load(context);
 
-        task.doWith(scheduleItemManager);
-        scheduleItemManager.Save(context);
+    public void giveScheduleTask(Task<ScheduleItemManager> task) {
+        synchronized (scheduleLock) {
+            if (scheduleItemManager == null)
+                scheduleItemManager = ScheduleItemManager.Load(context);
+
+            task.doWith(scheduleItemManager);
+            scheduleItemManager.Save(context);
+        }
     }
 
-    public synchronized void giveScheduleTaskConst(Task<ScheduleItemManager> task) {
-        if(scheduleItemManager == null)
-            scheduleItemManager = ScheduleItemManager.Load(context);
+    public void giveScheduleTaskConst(Task<ScheduleItemManager> task) {
+        synchronized (scheduleLock) {
+            if (scheduleItemManager == null)
+                scheduleItemManager = ScheduleItemManager.Load(context);
 
-        task.doWith(scheduleItemManager);
+            task.doWith(scheduleItemManager);
+        }
     }
 
 
