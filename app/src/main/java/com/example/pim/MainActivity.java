@@ -95,13 +95,16 @@ public class MainActivity extends AppCompatActivity
     GoogleApiClient googleClient;
 
     // callback manager of facebook
-    CallbackManager callbackManager;
+    CallbackManager fbLoginManager;
 
     // Twitter
     TwitterLoginButton twitterLoginButton;
     TwitterCore core;
     TweetUi tweetUi;
     TweetComposer composer;
+
+    boolean isTWLogining = false;
+    boolean isFBLogining = false;
 
 
     @Override
@@ -128,7 +131,7 @@ public class MainActivity extends AppCompatActivity
 
         // initialize Facebook sdk
         FacebookSdk.sdkInitialize(getApplicationContext());
-        callbackManager = CallbackManager.Factory.create();
+        fbLoginManager = CallbackManager.Factory.create();
 
         // initialize Twitter kit
         TwitterAuthConfig authConfig = new TwitterAuthConfig(TWITTER_KEY, TWITTER_SECRET);
@@ -245,7 +248,13 @@ public class MainActivity extends AppCompatActivity
             Log.d("Facebook", "connect button");
             loginButton.setReadPermissions("public_profile", "user_friends", "email");
             Log.d("Facebook", "set permission");
-            loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            loginButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    isFBLogining = true;
+                }
+            });
+            loginButton.registerCallback(fbLoginManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
                     Log.e("Facebook", "Token" + loginResult.getAccessToken().getToken());
@@ -292,6 +301,12 @@ public class MainActivity extends AppCompatActivity
             Log.d("Twitter", "setView");
 
             twitterLoginButton = (TwitterLoginButton) relativeLayout.findViewById(R.id.buttonTwitter);
+            twitterLoginButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    isTWLogining = true;
+                }
+            });
             twitterLoginButton.setCallback(new Callback<TwitterSession>() {
                 @Override
                 public void success(Result<TwitterSession> result) {
@@ -507,4 +522,21 @@ public class MainActivity extends AppCompatActivity
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("MainActivity", "onActivityResult");
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(isFBLogining) {
+            fbLoginManager.onActivityResult(requestCode, resultCode, data);
+            isFBLogining = false;
+        }
+
+        if(isTWLogining) {
+            twitterLoginButton.onActivityResult(requestCode, resultCode, data);
+            isTWLogining = false;
+        }
+    }
+
 }
