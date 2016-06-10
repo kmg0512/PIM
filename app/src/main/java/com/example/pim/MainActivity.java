@@ -1,8 +1,6 @@
 package com.example.pim;
 
-import android.app.ActivityManager;
 import android.app.AlarmManager;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.app.DatePickerDialog;
@@ -11,11 +9,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
-import android.os.SystemClock;
-import android.support.design.widget.FloatingActionButton;
-
 import android.support.annotation.NonNull;
 
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,7 +19,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -35,9 +30,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-
-import android.widget.LinearLayout;
-import android.widget.SearchView;
 
 import android.widget.RelativeLayout;
 
@@ -119,22 +111,15 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        //ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-        //        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        //drawer.setDrawerListener(toggle);
-       // toggle.syncState();
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        //FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
-        //fab.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-        //        CreateItemAddingPopUp();
-        //    }
-        //});
         // initialize google map api
         googleClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, 0 /* clientId */, this)
@@ -244,17 +229,9 @@ public class MainActivity extends AppCompatActivity
 
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
+        if (id == R.id.nav_sample) {
             CreateSampleItems();
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_schedule) {
             CreateItemAddingPopUp();
         } else if (id == R.id.nav_facebook) {
             final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -281,6 +258,7 @@ public class MainActivity extends AppCompatActivity
                             try {
                                 Log.e("Facebook", "User profile" + object.toString());
                             } catch (Exception e) {
+                                Log.e("Facebook", "User profile" + object.toString());
                                 e.printStackTrace();
                             }
                         }
@@ -290,10 +268,12 @@ public class MainActivity extends AppCompatActivity
 
                 @Override
                 public void onError(FacebookException error) {
+                    Log.e("Facebook", "Error" + error.getMessage());
                 }
 
                 @Override
                 public void onCancel() {
+                    Log.e("Facebook", "Cancel");
                 }
             });
 
@@ -465,7 +445,7 @@ public class MainActivity extends AppCompatActivity
                         // Get the Place object from the buffer.
                         final Place place = places.get(0);
 
-                        // TODO: Place to GoogleMapLocation
+                        // Place to GoogleMapLocation
                         data.loc_destination = new GoogleMapLocation(place.getName().toString(), place.getLatLng().latitude, place.getLatLng().longitude, place.getId());
 
                         places.release();
@@ -530,11 +510,12 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("Twitter", "onActivityResult");
-        super.onActivityResult(requestCode, resultCode, data);
+        //Log.d("Twitter", "onActivityResult");
+        //super.onActivityResult(requestCode, resultCode, data);
         // Make sure that the loginButton hears the result from any
         // Activity that it triggered.
         // twitterLoginButton.onActivityResult(requestCode, resultCode, data);
+        Log.d("Fuck", data.getAction());
+        Log.d("Fuck", data.getDataString());
     }
-
 }
