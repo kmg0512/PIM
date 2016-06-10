@@ -74,7 +74,9 @@ import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 import com.twitter.sdk.android.tweetcomposer.TweetComposer;
+import com.twitter.sdk.android.tweetui.TweetTimelineListAdapter;
 import com.twitter.sdk.android.tweetui.TweetUi;
+import com.twitter.sdk.android.tweetui.UserTimeline;
 
 import io.fabric.sdk.android.Fabric;
 import org.json.JSONObject;
@@ -94,6 +96,8 @@ public class MainActivity extends AppCompatActivity
     PlaceAutocompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
 
+    LinearLayoutManager socialLayoutManager;
+
     // callback manager of facebook
     CallbackManager fbLoginManager;
 
@@ -102,6 +106,7 @@ public class MainActivity extends AppCompatActivity
     TwitterCore core;
     TweetUi tweetUi;
     TweetComposer composer;
+    String userName;
 
     boolean isTWLogining = false;
     boolean isFBLogining = false;
@@ -153,18 +158,13 @@ public class MainActivity extends AppCompatActivity
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
-        LinearLayoutManager socialLayoutManager = new LinearLayoutManager(getApplicationContext());
+        socialLayoutManager = new LinearLayoutManager(getApplicationContext());
 
         // create schedule view
         RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
         scheduleRecyclerView.setLayoutManager(scheduleLayoutManager);
         scheduleItemAdapter = new ScheduleItemAdapter(this, 0);
         scheduleRecyclerView.setAdapter(scheduleItemAdapter);
-
-        // create social view
-        RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
-        socialRecyclerView.setLayoutManager(socialLayoutManager);
-        socialRecyclerView.setAdapter(new SocialItemAdapter(1));
 
         // log
         SharedDataManager.Inst(this).giveScheduleTask(new SharedDataManager.Task<ScheduleItemManager>() {
@@ -289,7 +289,6 @@ public class MainActivity extends AppCompatActivity
             });
 
             dialog.show();
-
         } else if (id == R.id.nav_twitter) {
             Log.d("Twitter", "Start");
             final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
@@ -317,6 +316,8 @@ public class MainActivity extends AppCompatActivity
                     // with your app's user model
                     String msg = "@" + session.getUserName() + " logged in! (#" + session.getUserId() + ")";
                     Log.d("Twitter", msg);
+
+                    userName = session.getUserName();
                 }
 
                 @Override
@@ -326,6 +327,17 @@ public class MainActivity extends AppCompatActivity
             });
 
             dialog.show();
+        } else if (id == R.id.nav_twitter_timeline) {
+            final UserTimeline userTimeline = new UserTimeline.Builder()
+                    .screenName(userName)
+                    .build();
+            final TweetTimelineListAdapter adapter = new TweetTimelineListAdapter.Builder(this)
+                    .setTimeline(userTimeline)
+                    .build();
+            // create social view
+            RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
+            socialRecyclerView.setLayoutManager(socialLayoutManager);
+            socialRecyclerView.setAdapter(adapter);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -383,7 +395,6 @@ public class MainActivity extends AppCompatActivity
             });
         }
     }
-
 
     private void CreateItemAddingPopUp() {
         final ScheduleItemData data = new ScheduleItemData();

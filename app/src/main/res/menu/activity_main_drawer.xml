@@ -5,11 +5,9 @@
         <menu>
             <item
                 android:id="@+id/nav_sample"
-                android:icon="@drawable/ic_menu_share"
                 android:title="샘플 일정 등록"/>
             <item
                 android:id="@+id/nav_schedule"
-                android:icon="@drawable/ic_menu_send"
                 android:title="일정 등록" />
         </menu>
     </item>
@@ -24,6 +22,13 @@
                 android:id="@+id/nav_twitter"
                 android:icon="@drawable/nav_twitter"
                 android:title="Twitter" />
+        </menu>
+    </item>
+    <item android:title="SNS 게시물 관리">
+        <menu>
+            <item
+                android:id="@+id/nav_twitter_timeline"
+                android:title="Twitter 게시물 불러오기" />
         </menu>
     </item>
 </menu>
