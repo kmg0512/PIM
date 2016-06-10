@@ -275,7 +275,8 @@ public class MainActivity extends AppCompatActivity
                     Log.e("Facebook", "User ID" + loginResult.getAccessToken().getUserId());
                     Log.e("Facebook", "Permission List" + loginResult.getAccessToken().getPermissions() + "");
 
-                    GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                    GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(),
+                            new GraphRequest.GraphJSONObjectCallback() {
                         @Override
                         public void onCompleted(JSONObject object, GraphResponse response) {
                             try {
@@ -285,6 +286,7 @@ public class MainActivity extends AppCompatActivity
                             }
                         }
                     });
+
                     request.executeAsync();
                 }
 
@@ -521,20 +523,8 @@ public class MainActivity extends AppCompatActivity
         dialog.show();
     }
 
-
-
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("Twitter", "onActivityResult");
-        super.onActivityResult(requestCode, resultCode, data);
-        // Make sure that the loginButton hears the result from any
-        // Activity that it triggered.
-        // twitterLoginButton.onActivityResult(requestCode, resultCode, data);
-    }
-
 }
