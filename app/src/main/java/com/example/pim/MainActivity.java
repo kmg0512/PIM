@@ -1,6 +1,7 @@
 package com.example.pim;
 
 import android.app.AlarmManager;
+import android.app.ListActivity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.app.DatePickerDialog;
@@ -31,6 +32,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 
 import android.widget.TimePicker;
@@ -96,8 +98,6 @@ public class MainActivity extends AppCompatActivity
     PlaceAutocompleteAdapter placeAutocompleteAdapter;
     GoogleApiClient googleClient;
 
-    LinearLayoutManager socialLayoutManager;
-
     // callback manager of facebook
     CallbackManager fbLoginManager;
 
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity
 
         // create layout manager
         LinearLayoutManager scheduleLayoutManager = new LinearLayoutManager(getApplicationContext());
-        socialLayoutManager = new LinearLayoutManager(getApplicationContext());
+        LinearLayoutManager socialLayoutManager = new LinearLayoutManager(getApplicationContext());
 
         // create schedule view
         RecyclerView scheduleRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Schedule);
@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity
             final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
             dialog.setTitle("Facebook 계정 관리");
 
-            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this, R.layout.dialog_facebook, null);
+            final RelativeLayout relativeLayout = (RelativeLayout) View.inflate(this,R.layout.dialog_facebook, null);
             dialog.setView(relativeLayout);
             Log.d("Facebook", "set layout");
 
@@ -257,16 +257,18 @@ public class MainActivity extends AppCompatActivity
             loginButton.registerCallback(fbLoginManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
-                    Log.e("Facebook", "Token" + loginResult.getAccessToken().getToken());
-                    Log.e("Facebook", "User ID" + loginResult.getAccessToken().getUserId());
-                    Log.e("Facebook", "Permission List" + loginResult.getAccessToken().getPermissions() + "");
+                    Log.d("Facebook", "Token" + loginResult.getAccessToken().getToken());
+                    Log.d("Facebook", "User ID" + loginResult.getAccessToken().getUserId());
+                    Log.d("Facebook", "Permission List" + loginResult.getAccessToken().getPermissions() + "");
 
                     GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(),
                             new GraphRequest.GraphJSONObjectCallback() {
                         @Override
                         public void onCompleted(JSONObject object, GraphResponse response) {
                             try {
-                                Log.e("Facebook", "User profile" + object.toString());
+                                Log.d("Facebook", "User profile" + object.toString());
+                                String msg = object.toString();
+                                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
                             } catch (Exception e) {
                                 Log.e("Facebook", "User profile" + object.toString());
                                 e.printStackTrace();
@@ -316,6 +318,7 @@ public class MainActivity extends AppCompatActivity
                     // with your app's user model
                     String msg = "@" + session.getUserName() + " logged in! (#" + session.getUserId() + ")";
                     Log.d("Twitter", msg);
+                    Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
 
                     userName = session.getUserName();
                 }
@@ -327,17 +330,6 @@ public class MainActivity extends AppCompatActivity
             });
 
             dialog.show();
-        } else if (id == R.id.nav_twitter_timeline) {
-            final UserTimeline userTimeline = new UserTimeline.Builder()
-                    .screenName(userName)
-                    .build();
-            final TweetTimelineListAdapter adapter = new TweetTimelineListAdapter.Builder(this)
-                    .setTimeline(userTimeline)
-                    .build();
-            // create social view
-            RecyclerView socialRecyclerView = (RecyclerView) findViewById(R.id.recyclerView_Social);
-            socialRecyclerView.setLayoutManager(socialLayoutManager);
-            socialRecyclerView.setAdapter(adapter);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
